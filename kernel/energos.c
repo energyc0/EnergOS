@@ -43,7 +43,6 @@ void main() {
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   while (1) {
     HAL_Delay(500);
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);

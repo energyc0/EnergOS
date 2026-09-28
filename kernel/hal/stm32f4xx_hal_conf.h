@@ -18,7 +18,8 @@
  ******************************************************************************
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion
+ * -------------------------------------*/
 #ifndef __STM32F4xx_HAL_CONF_H
 #define __STM32F4xx_HAL_CONF_H
 
@@ -26,10 +27,13 @@
 extern "C" {
 #endif
 
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
+/* Exported types
+ * ------------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------------------*/
 
-/* ########################## Module Selection ############################## */
+/* ########################## Module Selection ##############################
+ */
 /**
  * @brief This is the list of modules to be used in the HAL driver
  */
@@ -85,7 +89,8 @@ extern "C" {
 #define HAL_LPTIM_MODULE_ENABLED
 #define HAL_MMC_MODULE_ENABLED
 
-/* ########################## HSE/HSI Values adaptation ##################### */
+/* ########################## HSE/HSI Values adaptation #####################
+ */
 /**
  * @brief Adjust the value of External High Speed oscillator (HSE) used in your
  * application. This value is used by the RCC HAL module to compute the system
@@ -122,7 +127,7 @@ extern "C" {
  * @brief External Low Speed oscillator (LSE) value.
  */
 #if !defined(LSE_VALUE)
-#define LSE_VALUE                                                              \
+#define LSE_VALUE \
   32768U /*!< Value of the External Low Speed oscillator in Hz */
 #endif   /* LSE_VALUE */
 
@@ -136,14 +141,16 @@ extern "C" {
  * source frequency, this source is inserted directly through I2S_CKIN pad.
  */
 #if !defined(EXTERNAL_CLOCK_VALUE)
-#define EXTERNAL_CLOCK_VALUE                                                   \
+#define EXTERNAL_CLOCK_VALUE \
   12288000U /*!< Value of the External oscillator in Hz*/
 #endif      /* EXTERNAL_CLOCK_VALUE */
 
 /* Tip: To avoid modifying this file each time you need to use different HSE,
-   ===  you can define the HSE value in your toolchain compiler preprocessor. */
+   ===  you can define the HSE value in your toolchain compiler preprocessor.
+ */
 
-/* ########################### System Configuration ######################### */
+/* ########################### System Configuration #########################
+ */
 /**
  * @brief This is the HAL system configuration section
  */
@@ -154,93 +161,95 @@ extern "C" {
 #define INSTRUCTION_CACHE_ENABLE 1U
 #define DATA_CACHE_ENABLE 1U
 
-#define USE_HAL_ADC_REGISTER_CALLBACKS                                         \
+#define USE_HAL_ADC_REGISTER_CALLBACKS \
   0U /* ADC register callback disabled       */
-#define USE_HAL_CAN_REGISTER_CALLBACKS                                         \
+#define USE_HAL_CAN_REGISTER_CALLBACKS \
   0U /* CAN register callback disabled       */
-#define USE_HAL_CEC_REGISTER_CALLBACKS                                         \
+#define USE_HAL_CEC_REGISTER_CALLBACKS \
   0U /* CEC register callback disabled       */
-#define USE_HAL_CRYP_REGISTER_CALLBACKS                                        \
+#define USE_HAL_CRYP_REGISTER_CALLBACKS \
   0U /* CRYP register callback disabled      */
-#define USE_HAL_DAC_REGISTER_CALLBACKS                                         \
+#define USE_HAL_DAC_REGISTER_CALLBACKS \
   0U /* DAC register callback disabled       */
-#define USE_HAL_DCMI_REGISTER_CALLBACKS                                        \
+#define USE_HAL_DCMI_REGISTER_CALLBACKS \
   0U /* DCMI register callback disabled      */
-#define USE_HAL_DFSDM_REGISTER_CALLBACKS                                       \
+#define USE_HAL_DFSDM_REGISTER_CALLBACKS \
   0U /* DFSDM register callback disabled     */
-#define USE_HAL_DMA2D_REGISTER_CALLBACKS                                       \
+#define USE_HAL_DMA2D_REGISTER_CALLBACKS \
   0U /* DMA2D register callback disabled     */
-#define USE_HAL_DSI_REGISTER_CALLBACKS                                         \
+#define USE_HAL_DSI_REGISTER_CALLBACKS \
   0U /* DSI register callback disabled       */
-#define USE_HAL_ETH_REGISTER_CALLBACKS                                         \
+#define USE_HAL_ETH_REGISTER_CALLBACKS \
   0U /* ETH register callback disabled       */
-#define USE_HAL_HASH_REGISTER_CALLBACKS                                        \
+#define USE_HAL_HASH_REGISTER_CALLBACKS \
   0U /* HASH register callback disabled      */
-#define USE_HAL_HCD_REGISTER_CALLBACKS                                         \
+#define USE_HAL_HCD_REGISTER_CALLBACKS \
   0U /* HCD register callback disabled       */
-#define USE_HAL_I2C_REGISTER_CALLBACKS                                         \
+#define USE_HAL_I2C_REGISTER_CALLBACKS \
   0U /* I2C register callback disabled       */
-#define USE_HAL_FMPI2C_REGISTER_CALLBACKS                                      \
+#define USE_HAL_FMPI2C_REGISTER_CALLBACKS \
   0U /* FMPI2C register callback disabled    */
-#define USE_HAL_FMPSMBUS_REGISTER_CALLBACKS                                    \
+#define USE_HAL_FMPSMBUS_REGISTER_CALLBACKS \
   0U /* FMPSMBUS register callback disabled  */
-#define USE_HAL_I2S_REGISTER_CALLBACKS                                         \
+#define USE_HAL_I2S_REGISTER_CALLBACKS \
   0U /* I2S register callback disabled       */
-#define USE_HAL_IRDA_REGISTER_CALLBACKS                                        \
+#define USE_HAL_IRDA_REGISTER_CALLBACKS \
   0U /* IRDA register callback disabled      */
-#define USE_HAL_LPTIM_REGISTER_CALLBACKS                                       \
+#define USE_HAL_LPTIM_REGISTER_CALLBACKS \
   0U /* LPTIM register callback disabled     */
-#define USE_HAL_LTDC_REGISTER_CALLBACKS                                        \
+#define USE_HAL_LTDC_REGISTER_CALLBACKS \
   0U /* LTDC register callback disabled      */
-#define USE_HAL_MMC_REGISTER_CALLBACKS                                         \
+#define USE_HAL_MMC_REGISTER_CALLBACKS \
   0U /* MMC register callback disabled       */
-#define USE_HAL_NAND_REGISTER_CALLBACKS                                        \
+#define USE_HAL_NAND_REGISTER_CALLBACKS \
   0U /* NAND register callback disabled      */
-#define USE_HAL_NOR_REGISTER_CALLBACKS                                         \
+#define USE_HAL_NOR_REGISTER_CALLBACKS \
   0U /* NOR register callback disabled       */
-#define USE_HAL_PCCARD_REGISTER_CALLBACKS                                      \
+#define USE_HAL_PCCARD_REGISTER_CALLBACKS \
   0U /* PCCARD register callback disabled    */
-#define USE_HAL_PCD_REGISTER_CALLBACKS                                         \
+#define USE_HAL_PCD_REGISTER_CALLBACKS \
   0U /* PCD register callback disabled       */
-#define USE_HAL_QSPI_REGISTER_CALLBACKS                                        \
+#define USE_HAL_QSPI_REGISTER_CALLBACKS \
   0U /* QSPI register callback disabled      */
-#define USE_HAL_RNG_REGISTER_CALLBACKS                                         \
+#define USE_HAL_RNG_REGISTER_CALLBACKS \
   0U /* RNG register callback disabled       */
-#define USE_HAL_RTC_REGISTER_CALLBACKS                                         \
+#define USE_HAL_RTC_REGISTER_CALLBACKS \
   0U /* RTC register callback disabled       */
-#define USE_HAL_SAI_REGISTER_CALLBACKS                                         \
+#define USE_HAL_SAI_REGISTER_CALLBACKS \
   0U /* SAI register callback disabled       */
-#define USE_HAL_SD_REGISTER_CALLBACKS                                          \
+#define USE_HAL_SD_REGISTER_CALLBACKS \
   0U /* SD register callback disabled        */
-#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS                                   \
+#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS \
   0U /* SMARTCARD register callback disabled */
-#define USE_HAL_SDRAM_REGISTER_CALLBACKS                                       \
+#define USE_HAL_SDRAM_REGISTER_CALLBACKS \
   0U /* SDRAM register callback disabled     */
-#define USE_HAL_SRAM_REGISTER_CALLBACKS                                        \
+#define USE_HAL_SRAM_REGISTER_CALLBACKS \
   0U /* SRAM register callback disabled      */
-#define USE_HAL_SPDIFRX_REGISTER_CALLBACKS                                     \
+#define USE_HAL_SPDIFRX_REGISTER_CALLBACKS \
   0U /* SPDIFRX register callback disabled   */
-#define USE_HAL_SMBUS_REGISTER_CALLBACKS                                       \
+#define USE_HAL_SMBUS_REGISTER_CALLBACKS \
   0U /* SMBUS register callback disabled     */
-#define USE_HAL_SPI_REGISTER_CALLBACKS                                         \
+#define USE_HAL_SPI_REGISTER_CALLBACKS \
   0U /* SPI register callback disabled       */
-#define USE_HAL_TIM_REGISTER_CALLBACKS                                         \
+#define USE_HAL_TIM_REGISTER_CALLBACKS \
   0U /* TIM register callback disabled       */
-#define USE_HAL_UART_REGISTER_CALLBACKS                                        \
+#define USE_HAL_UART_REGISTER_CALLBACKS \
   0U /* UART register callback disabled      */
-#define USE_HAL_USART_REGISTER_CALLBACKS                                       \
+#define USE_HAL_USART_REGISTER_CALLBACKS \
   0U /* USART register callback disabled     */
-#define USE_HAL_WWDG_REGISTER_CALLBACKS                                        \
+#define USE_HAL_WWDG_REGISTER_CALLBACKS \
   0U /* WWDG register callback disabled      */
 
-/* ########################## Assert Selection ############################## */
+/* ########################## Assert Selection ##############################
+ */
 /**
  * @brief Uncomment the line below to expanse the "assert_param" macro in the
  *        HAL drivers code
  */
 /* #define USE_FULL_ASSERT    1U */
 
-/* ################## Ethernet peripheral configuration ##################### */
+/* ################## Ethernet peripheral configuration #####################
+ */
 
 /* Section 1 : Ethernet peripheral configuration */
 
@@ -277,57 +286,58 @@ extern "C" {
 
 #define PHY_RESET ((uint16_t)0x8000)    /*!< PHY Reset */
 #define PHY_LOOPBACK ((uint16_t)0x4000) /*!< Select loop-back mode */
-#define PHY_FULLDUPLEX_100M                                                    \
+#define PHY_FULLDUPLEX_100M \
   ((uint16_t)0x2100) /*!< Set the full-duplex mode at 100 Mb/s */
-#define PHY_HALFDUPLEX_100M                                                    \
+#define PHY_HALFDUPLEX_100M \
   ((uint16_t)0x2000) /*!< Set the half-duplex mode at 100 Mb/s */
-#define PHY_FULLDUPLEX_10M                                                     \
+#define PHY_FULLDUPLEX_10M \
   ((uint16_t)0x0100) /*!< Set the full-duplex mode at 10 Mb/s  */
-#define PHY_HALFDUPLEX_10M                                                     \
+#define PHY_HALFDUPLEX_10M \
   ((uint16_t)0x0000) /*!< Set the half-duplex mode at 10 Mb/s  */
-#define PHY_AUTONEGOTIATION                                                    \
+#define PHY_AUTONEGOTIATION \
   ((uint16_t)0x1000) /*!< Enable auto-negotiation function     */
-#define PHY_RESTART_AUTONEGOTIATION                                            \
+#define PHY_RESTART_AUTONEGOTIATION \
   ((uint16_t)0x0200) /*!< Restart auto-negotiation function    */
-#define PHY_POWERDOWN                                                          \
+#define PHY_POWERDOWN \
   ((uint16_t)0x0800) /*!< Select the power down mode           */
-#define PHY_ISOLATE                                                            \
+#define PHY_ISOLATE \
   ((uint16_t)0x0400) /*!< Isolate PHY from MII                 */
 
-#define PHY_AUTONEGO_COMPLETE                                                  \
+#define PHY_AUTONEGO_COMPLETE \
   ((uint16_t)0x0020) /*!< Auto-Negotiation process completed   */
-#define PHY_LINKED_STATUS                                                      \
+#define PHY_LINKED_STATUS \
   ((uint16_t)0x0004) /*!< Valid link established               */
-#define PHY_JABBER_DETECTION                                                   \
+#define PHY_JABBER_DETECTION \
   ((uint16_t)0x0002) /*!< Jabber condition detected            */
 
 /* Section 4: Extended PHY Registers */
 
-#define PHY_SR                                                                 \
+#define PHY_SR \
   ((uint16_t)0x0010) /*!< PHY status register Offset                      */
-#define PHY_MICR                                                               \
+#define PHY_MICR \
   ((uint16_t)0x0011) /*!< MII Interrupt Control Register                  */
-#define PHY_MISR                                                               \
+#define PHY_MISR \
   ((uint16_t)0x0012) /*!< MII Interrupt Status and Misc. Control Register */
 
-#define PHY_LINK_STATUS                                                        \
+#define PHY_LINK_STATUS \
   ((uint16_t)0x0001) /*!< PHY Link mask                                   */
-#define PHY_SPEED_STATUS                                                       \
+#define PHY_SPEED_STATUS \
   ((uint16_t)0x0002) /*!< PHY Speed mask                                  */
-#define PHY_DUPLEX_STATUS                                                      \
+#define PHY_DUPLEX_STATUS \
   ((uint16_t)0x0004) /*!< PHY Duplex mask                                 */
 
-#define PHY_MICR_INT_EN                                                        \
+#define PHY_MICR_INT_EN \
   ((uint16_t)0x0002) /*!< PHY Enable interrupts                           */
-#define PHY_MICR_INT_OE                                                        \
+#define PHY_MICR_INT_OE \
   ((uint16_t)0x0001) /*!< PHY Enable output interrupt events              */
 
-#define PHY_MISR_LINK_INT_EN                                                   \
+#define PHY_MISR_LINK_INT_EN \
   ((uint16_t)0x0020) /*!< Enable Interrupt on change of link status       */
-#define PHY_LINK_INTERRUPT                                                     \
+#define PHY_LINK_INTERRUPT \
   ((uint16_t)0x2000) /*!< PHY link status interrupt mask                  */
 
-/* ################## SPI peripheral configuration ########################## */
+/* ################## SPI peripheral configuration ##########################
+ */
 
 /* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
  * Activated: CRC code is present inside driver
@@ -336,7 +346,8 @@ extern "C" {
 
 #define USE_SPI_CRC 1U
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * ------------------------------------------------------------------*/
 /**
  * @brief Include module's header file
  */
@@ -541,7 +552,8 @@ extern "C" {
 #include "stm32f4xx_hal_mmc.h"
 #endif /* HAL_MMC_MODULE_ENABLED */
 
-/* Exported macro ------------------------------------------------------------*/
+/* Exported macro
+ * ------------------------------------------------------------*/
 #ifdef USE_FULL_ASSERT
 /**
  * @brief  The assert_param macro is used for function's parameters check.
@@ -551,10 +563,11 @@ extern "C" {
  *         If expr is true, it returns no value.
  * @retval None
  */
-#define assert_param(expr)                                                     \
-  ((expr) ? (void)0U : assert_failed((uint8_t *)__FILE__, __LINE__))
-/* Exported functions ------------------------------------------------------- */
-void assert_failed(uint8_t *file, uint32_t line);
+#define assert_param(expr) \
+  ((expr) ? (void)0U : assert_failed((uint8_t*)__FILE__, __LINE__))
+/* Exported functions -------------------------------------------------------
+ */
+void assert_failed(uint8_t* file, uint32_t line);
 #else
 #define assert_param(expr) ((void)0U)
 #endif /* USE_FULL_ASSERT */

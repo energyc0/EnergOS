@@ -1,7 +1,8 @@
+#include <stdint.h>
+
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_rcc.h"
-#include <stdint.h>
 
 #define F_CPU 16000000UL
 #define TIMER_TICK F_CPU / 1000 - 1
@@ -15,8 +16,7 @@ void SystemClock_Config() {
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_OFF;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-    while (1)
-      ;
+    while (1);
   }
 
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK |
@@ -26,15 +26,13 @@ void SystemClock_Config() {
   RCC_ClkInitStruct.APB1CLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_SYSCLK_DIV1;
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
-    while (1)
-      ;
+    while (1);
   }
 }
 
 void main() {
   if (HAL_Init() != 0) {
-    while (1)
-      ;
+    while (1);
   }
   SystemClock_Config();
   __HAL_RCC_GPIOA_CLK_ENABLE();

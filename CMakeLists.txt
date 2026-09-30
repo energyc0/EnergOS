@@ -16,6 +16,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 set(BAUDRATE 115200)
+set(MCU_DEVICE_FILE /dev/ttyACM0)
 
 add_compile_options(-mcpu=${CMAKE_SYSTEM_PROCESSOR})
 add_compile_options(-mthumb)
@@ -32,3 +33,7 @@ add_subdirectory(${KERNEL_DIR})
 
 add_custom_target(debug_server COMMAND
     openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)
+
+add_custom_target(minicom COMMAND
+    minicom -D ${MCU_DEVICE_FILE} -b ${BAUDRATE})
+    

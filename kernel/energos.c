@@ -3,6 +3,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_rcc.h"
+#include "uart.h"
 
 #define F_CPU 16000000UL
 #define TIMER_TICK F_CPU / 1000 - 1
@@ -30,11 +31,7 @@ void SystemClock_Config() {
   }
 }
 
-void main() {
-  if (HAL_Init() != 0) {
-    while (1);
-  }
-  SystemClock_Config();
+void GPIO_Init() {
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -43,6 +40,28 @@ void main() {
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+void main() {
+  if (HAL_Init() != 0) {
+    while (1);
+  }
+  GPIO_Init();
+  SystemClock_Config();
+  UART_Init();
+
+  UART_SendString("Hello!\r\n");
+
+  uint8_t rx;
+  while (1) {
+    if (UART_ReceiveByte(&rx, 100)) {
+      UART_SendByte(rx);
+    }
+  }
+}
+
+void Error_Handler(void) {
+  __disable_irq();
   while (1) {
     HAL_Delay(500);
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);

@@ -20,7 +20,9 @@ jobs:
           cmake --build build
       - name: Run clang-tidy
         run: | 
-          run-clang-tidy -p=build -exclude='.*/third_party/.*'
+          FILES=$(find kernel -type f \( -name '*.c' -o -name '*.h' \) \
+            ! -path '*/third_party/*')
+          run-clang-tidy -p=build -quiet $FILES
       - name: Run clang-format
         run: |
           find . -not -path "./third_party/*" \

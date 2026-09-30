@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Setup checkout
         uses: actions/checkout@v5
+        with: 
+          submodules: recursive
       - name: Build project
         run: | 
           cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

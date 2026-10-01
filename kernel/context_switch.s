@@ -1,9 +1,10 @@
+.syntax unified
 .thumb
-
-.global context_switch
-context_switch:
+.thumb_func
+.global _context_switch
+_context_switch:
 @ Save the current context
-    msr ip, psr
+    mrs ip, psr
     push {r4-r11, lr}
 
 @ Load new context stack pointer
@@ -11,7 +12,7 @@ context_switch:
 @ Switch to unprivileged thread mode
     mov r0, #3
     msr control, r0
-
+    
 @ Load user state
 	pop {r4, r5, r6, r7, r8, r9, r10, r11, lr}
 

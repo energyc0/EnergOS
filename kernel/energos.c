@@ -1,8 +1,11 @@
 #include <stdint.h>
 
+#include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_cortex.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_rcc.h"
+#include "task.h"
 #include "uart.h"
 
 #define F_CPU 16000000UL
@@ -42,6 +45,22 @@ void GPIO_Init() {
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
+void task1() {
+  while (1) {
+    HAL_Delay(500);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    Task_Yield();
+  }
+}
+
+void task2() {
+  while (1) {
+    HAL_Delay(500);
+    UART_SendString("Hello!\r\n");
+    // Task_Yield();
+  }
+}
+
 void main() {
   if (HAL_Init() != 0) {
     while (1);
@@ -52,11 +71,11 @@ void main() {
 
   UART_SendString("Hello!\r\n");
 
-  uint8_t rx;
+  Scheduler_Init();
+
   while (1) {
-    if (UART_ReceiveByte(&rx, 100)) {
-      UART_SendByte(rx);
-    }
+    HAL_Delay(500);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   }
 }
 

@@ -29,9 +29,10 @@ void SysTick_Handler() { HAL_IncTick(); }
 
 void HardFault_Handler() { while (1); }
 
+void PendSV_Handler() {}
+
 __attribute__((section(".isr_vector"))) const uint32_t* isr_vector[] = {
-    [0] = (uint32_t*)&_estack,
-    [1] = (uint32_t*)Reset_Handler,
-    [3] = (uint32_t*)HardFault_Handler,
+    [0] = (uint32_t*)&_estack,          [1] = (uint32_t*)Reset_Handler,
+    [3] = (uint32_t*)HardFault_Handler, [14] = (uint32_t*)PendSV_Handler,
     [15] = (uint32_t*)SysTick_Handler,
 };

@@ -4,6 +4,8 @@ set(KERNEL_SRC
 ${FIRMWARE_NAME}.c 
 startup.c 
 uart.c 
+task.c
+context_switch.s
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})

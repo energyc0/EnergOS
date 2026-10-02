@@ -1,20 +1,28 @@
 .syntax unified
 .thumb
 .thumb_func
-.global _context_switch
-_context_switch:
-@ Save the current context
-    mrs ip, psr
-    push {r4-r11, lr}
 
-@ Load new context stack pointer
-    msr psp, r0
-@ Switch to unprivileged thread mode
-    mov r0, #3
-    msr control, r0
+
+.global PendSV_Handler
+PendSV_Handler:
+@ Save the current context
+    @mrs ip, psr
+    push {r4-r11}
     
+    mrs r0, psp
+    ldr r1, =current_task
+    str r0, [r1]
+
+    bl Scheduler_Switch
+    
+    ldr r0, =current_task
+    ldr r1, [r0]
+    msr psp, r1
+
 @ Load user state
-	pop {r4, r5, r6, r7, r8, r9, r10, r11, lr}
+	pop {r4, r5, r6, r7, r8, r9, r10, r11}
+    @msr psr, ip
 
 @ Jump to user task
 	bx lr
+    

@@ -10,3 +10,6 @@ uint32_t Task_Create(const char *name, void (*entry)(void));
 void Task_Yield(void);
 
 void Scheduler_Init(void);
+
+// Starts the scheduler and never returns
+void Scheduler_Start(void);

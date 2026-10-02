@@ -57,7 +57,7 @@ void task2() {
   while (1) {
     HAL_Delay(500);
     UART_SendString("Hello!\r\n");
-    // Task_Yield();
+    Task_Yield();
   }
 }
 
@@ -72,11 +72,9 @@ void main() {
   UART_SendString("Hello!\r\n");
 
   Scheduler_Init();
-
-  while (1) {
-    HAL_Delay(500);
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  }
+  Task_Create("task1", task1);
+  Task_Create("task2", task2);
+  Scheduler_Start();
 }
 
 void Error_Handler(void) {

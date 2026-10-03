@@ -4,6 +4,7 @@
 
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
+#include "syscall.h"
 
 #define TASK_STACK_SIZE 256
 #define NTASKS 16
@@ -19,18 +20,16 @@ typedef struct task {
   enum task_state state;
 } task_t;
 
-task_t tasks[NTASKS];
+task_t tasks[NTASKS] = {};
 uint32_t task_count = 0;
 uint32_t task_start_id = 1;
-task_t *current_task;
+task_t *current_task = NULL;
 
 uint32_t *Task_Stack_Init(uint32_t *stack_top, void (*task_entry)(void)) {
-  stack_top -= 8;  // Reserve space for R4-R11
-
   // Create exception frame
   stack_top -= 8;
   stack_top[7] = 0x1000000;             // xPSR, enable Thumb mode, 24 bit = 1
-  stack_top[6] = (uint32_t)task_entry;  // PC
+  stack_top[6] = (uint32_t)task_entry;  // Return address
   stack_top[5] =
       0xfffffffd;    // Switch to Unprivileged Handler Mode, unstack next task’s
                      // exception frame and continue on its PC.
@@ -39,6 +38,9 @@ uint32_t *Task_Stack_Init(uint32_t *stack_top, void (*task_entry)(void)) {
   stack_top[2] = 0;  // R2
   stack_top[1] = 0;  // R1
   stack_top[0] = 0;  // R0
+
+  *(--stack_top) = 0xFFFFFFFD;  // EXC_RETURN
+  stack_top -= 8;               // Reserve space for R4-R11
 
   return stack_top;
 }
@@ -61,14 +63,7 @@ uint32_t Task_Create(const char *name, void (*entry)(void)) {
   return task->tid;
 }
 
-void Task_Yield() {
-  // Pend PendSV interrupt
-  SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-  // Data syncronization barrier
-  __DSB();
-  // Instruction syncronization barrier
-  __ISB();
-}
+void Task_Yield() { __asm volatile("SVC %0" : : "n"(SYSCALL_TASK_SWITCH)); }
 
 void Scheduler_Init(void) {
   // No preemtion, only subpriority

@@ -6,6 +6,7 @@ startup.c
 uart.c 
 task.c
 context_switch.s
+syscall.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})

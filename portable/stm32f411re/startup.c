@@ -1,10 +1,14 @@
 #include <stdint.h>
 
+#include "kassert.h"
+#include "portable.h"
 #include "stm32f4xx_hal.h"
 
 extern int main(void);
 extern void PendSV_Handler(void);
-extern void SVCall_Handler(void);
+extern void SVC_Handler(void);
+extern int pSystemClock_Config(void);
+extern int pUART_Init(void);
 extern char _estack;
 extern uint32_t _sidata;
 extern uint32_t _sdata;
@@ -23,6 +27,11 @@ void Reset_Handler() {
     *destination++ = 0;
   }
 
+  kassert(HAL_Init());
+  // GPIO_Init();
+  pSystemClock_Config();
+  pUART_Init();
+
   main();
   while (1);
 }
@@ -33,6 +42,6 @@ void HardFault_Handler() { while (1); }
 
 __attribute__((section(".isr_vector"))) const uint32_t* isr_vector[] = {
     [0] = (uint32_t*)&_estack,          [1] = (uint32_t*)Reset_Handler,
-    [3] = (uint32_t*)HardFault_Handler, [11] = (uint32_t*)SVCall_Handler,
+    [3] = (uint32_t*)HardFault_Handler, [11] = (uint32_t*)SVC_Handler,
     [14] = (uint32_t*)PendSV_Handler,   [15] = (uint32_t*)SysTick_Handler,
 };

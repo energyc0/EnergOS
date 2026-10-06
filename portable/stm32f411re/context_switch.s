@@ -2,6 +2,7 @@
 .thumb
 
 .extern SVCall_Handler_C
+.extern current_task
 
 .thumb_func
 .global PendSV_Handler
@@ -28,10 +29,10 @@ PendSV_Handler:
 	bx lr
 
 .thumb_func
-.global SVCall_Handler
-SVCall_Handler:
+.global SVC_Handler
+SVC_Handler:
     tst lr, #4
     ite eq
     mrseq r0, msp
     mrsne r0, psp
-    b SVCall_Handler_C
+    b SVC_Handler_C

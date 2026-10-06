@@ -1,10 +1,12 @@
-#include "uart.h"
-
 #include <stdint.h>
+#include <string.h>
+
+#include "portable.h"
+#include "stm32f4xx_hal.h"
 
 UART_HandleTypeDef huart2;
 
-void UART_Init(void) {
+int pUART_Init(void) {
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_USART2_CLK_ENABLE();
 
@@ -26,21 +28,19 @@ void UART_Init(void) {
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
 
-  if (HAL_UART_Init(&huart2) != HAL_OK) {
-    while (1);
-  }
+  return HAL_UART_Init(&huart2) == HAL_OK;
 }
 
-void UART_SendByte(uint8_t byte) {
+void pUART_SendByte(uint8_t byte) {
   HAL_UART_Transmit(&huart2, &byte, 1, HAL_MAX_DELAY);
 }
 
-void UART_SendString(const char *str) {
+void pUART_SendString(const char *str) {
   if (str == NULL) return;
-  while (*str != '\0') UART_SendByte((uint8_t)*str++);
+  HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 }
 
-bool UART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
-  if (byte == NULL) return false;
+int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
+  if (byte == NULL) return 0;
   return (HAL_UART_Receive(&huart2, byte, 1, timeout_ms) == HAL_OK);
 }

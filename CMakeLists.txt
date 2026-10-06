@@ -1,34 +1,34 @@
 cmake_minimum_required(VERSION 3.31)
 project(EnergOS C ASM)
 
-# The toolchain is built specifically for the Cortex-M4
-# with crosstool-ng
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_C_COMPILER arm-none-eabi-gcc)
-set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
-set(OBJCOPY arm-none-eabi-objcopy)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+    add_compile_definitions(DEBUG)
+endif()
+
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "System processor: ${CMAKE_SYSTEM_PROCESSOR}")
 set(FIRMWARE_NAME energos)
-
-set(CMAKE_SYSTEM_PROCESSOR cortex-m4)
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
-
-set(BAUDRATE 115200)
 set(MCU_DEVICE_FILE /dev/ttyACM0)
 
-add_compile_options(-mcpu=${CMAKE_SYSTEM_PROCESSOR})
-add_compile_options(-mthumb)
-add_compile_options(-DSTM32F411xE -DDEBUG -DUSE_HAL_DRIVER -DBAUDRATE=${BAUDRATE})
-add_compile_options(-fno-pic -fno-pie -nostdlib -ffreestanding)
-add_compile_options(-Wall -Wunused-result -Werror -O0 -g3 -Og -Wno-main)
-add_compile_options(-mfpu=fpv4-sp-d16 -mfloat-abi=hard)
+#-ffunction-sections - for dead code elimination
+add_compile_options(-Wall -Wextra -Werror -Wunused-result -Og -Wno-main -O0 -g3 -ffunction-sections -fdata-sections -fno-pic -fno-pie -ffreestanding)
+add_link_options(-nostdlib)
 
 set(THIRD_PARTY ${PROJECT_SOURCE_DIR}/third_party)
+set(PORT_DIR ${PROJECT_SOURCE_DIR}/portable)
 set(KERNEL_DIR ${PROJECT_SOURCE_DIR}/kernel)
 
 add_subdirectory(${THIRD_PARTY})
+add_subdirectory(${PORT_DIR})
+if(NOT LINKER_SCRIPT)
+    message(FATAL_ERROR "The platform did not provide a linker script")
+endif()
+message(STATUS "Linker script: ${LINKER_SCRIPT}")
+add_link_options("-T${LINKER_SCRIPT}")
+
 add_subdirectory(${KERNEL_DIR})
 
 add_custom_target(debug_server COMMAND

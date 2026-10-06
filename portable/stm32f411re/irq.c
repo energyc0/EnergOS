@@ -4,6 +4,7 @@
 #include "cmsis_gcc.h"
 #include "portable.h"
 #include "stm32f411xe.h"
+#include "stm32f4xx_hal.h"
 
 extern void Syscall_Handler(uint32_t);
 
@@ -28,5 +29,16 @@ void SVC_Handler_C(uint32_t* stack_frame) {
   // Enter kernel
   Syscall_Handler(svc_id);
 }
+
+void SysTick_Handler() {
+  static uint32_t task_time_switch = 0;
+  HAL_IncTick();
+  if (++task_time_switch >= 10) {
+    pPend_Task_Switch();
+    task_time_switch = 0;
+  }
+}
+
+void HardFault_Handler() { while (1); }
 
 void pDisable_IRQ() { __disable_irq(); }

@@ -1,5 +1,8 @@
 #include "task.h"
 
+#include <stdint.h>
+
+#include "kassert.h"
 #include "stm32f4xx_hal.h"
 #include "syscall.h"
 
@@ -23,14 +26,13 @@ uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void)) {
   return stack_top;
 }
 
-void pScheduler_Start(void) {
-  // Scheduler_Switch();
-  //__set_PSP((uint32_t)current_task->sp);
-  //  Unprivileged Handler Mode
-  //__set_CONTROL(0x3);
-  //__ISB();
+void _pScheduler_Start(uint32_t *stack_top, void (*task_entry)(void)) {
+  __set_PSP((uint32_t)stack_top);
+  //   Unprivileged Handler Mode
+  __set_CONTROL(0x3);
+  __ISB();
 
-  // current_task->entry();
+  task_entry();
   while (1);
 }
 

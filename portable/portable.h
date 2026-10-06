@@ -5,8 +5,10 @@
 /* Scheduler */
 uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void));
 void pScheduler_Init(void);
-void pScheduler_Start(void);
+void _pScheduler_Start(uint32_t *stack_top, void (*task_entry)(void));
+// Yield the current task and switch to the next one
 void pTask_Yield(void);
+// High privilige task switch, used by the kernel to switch tasks
 void pPend_Task_Switch(void);
 
 /* Time */

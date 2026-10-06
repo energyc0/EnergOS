@@ -18,15 +18,13 @@ void GPIO_Init() {
 
 void task1() {
   while (1) {
-    pDelay(500);
     pUART_SendString("1\r\n");
   }
 }
 
 void task2() {
   while (1) {
-    pDelay(500);
-    pUART_SendString("1\r\n");
+    pUART_SendString("2\r\n");
   }
 }
 
@@ -36,5 +34,5 @@ void main() {
   pScheduler_Init();
   Task_Create("task1", task1);
   Task_Create("task2", task2);
-  pScheduler_Start();
+  Scheduler_Start();
 }

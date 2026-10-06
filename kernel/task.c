@@ -63,3 +63,8 @@ void Scheduler_Switch(void) {
     }
   }
 }
+
+void Scheduler_Start(void) {
+  Scheduler_Switch();
+  _pScheduler_Start(current_task->sp, current_task->entry);
+}

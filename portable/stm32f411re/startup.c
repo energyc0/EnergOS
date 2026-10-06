@@ -9,6 +9,9 @@ extern void PendSV_Handler(void);
 extern void SVC_Handler(void);
 extern int pSystemClock_Config(void);
 extern int pUART_Init(void);
+extern void SysTick_Handler(void);
+extern void HardFault_Handler(void);
+
 extern char _estack;
 extern uint32_t _sidata;
 extern uint32_t _sdata;
@@ -27,7 +30,7 @@ void Reset_Handler() {
     *destination++ = 0;
   }
 
-  kassert(HAL_Init());
+  kassert(HAL_Init() == HAL_OK);
   // GPIO_Init();
   pSystemClock_Config();
   pUART_Init();
@@ -35,10 +38,6 @@ void Reset_Handler() {
   main();
   while (1);
 }
-
-void SysTick_Handler() { HAL_IncTick(); }
-
-void HardFault_Handler() { while (1); }
 
 __attribute__((section(".isr_vector"))) const uint32_t* isr_vector[] = {
     [0] = (uint32_t*)&_estack,          [1] = (uint32_t*)Reset_Handler,

@@ -1,8 +1,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 
-#include "kassert.h"
-#include "portable.h"
+#include "io.h"
 #include "task.h"
 
 /*
@@ -20,20 +19,20 @@ void GPIO_Init() {
 
 void task1() {
   while (1) {
-    pUART_SendString("task1\n\r");
-    pDelay(1);
+    Print_Str("task1\n\r");
+    // pDelay(1);
   }
 }
 
 void task2() {
   while (1) {
-    pUART_SendString("task2\n\r");
-    pDelay(1);
+    Print_Str("task2\n\r");
+    // pDelay(1);
   }
 }
 
 void main() {
-  pUART_SendString("Hello!\r\n");
+  Print_Str("Hello!\r\n");
 
   Task_Create("task2", task2);
   Task_Create("task1", task1);

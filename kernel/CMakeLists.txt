@@ -2,6 +2,8 @@ set(KERNEL_SRC
 ${FIRMWARE_NAME}.c 
 syscall.c
 task.c
+io.c
+spinlock.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})

@@ -34,7 +34,7 @@ void SysTick_Handler(void) {
   // static uint32_t task_time_switch = 0;
   HAL_IncTick();
   // if (++task_time_switch >= 1) {
-  pPend_Task_Switch();
+  SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
   //  task_time_switch = 0;
   //}
 }

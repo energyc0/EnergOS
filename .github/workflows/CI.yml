@@ -16,7 +16,9 @@ jobs:
           sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
       - name: Build project
         run: | 
-          cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -B build \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCMAKE_TOOLCHAIN_FILE=cmake/cortex-m4.cmake
           cmake --build build
       - name: Run clang-tidy
         run: | 

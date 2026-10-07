@@ -36,3 +36,35 @@ SVC_Handler:
     mrseq r0, msp
     mrsne r0, psp
     b SVC_Handler_C
+
+.thumb_func
+.global pStart_First_Task
+pStart_First_Task:
+    ldr r0, =0xE000ED08 @ Read VTOR to get the end of stack
+    ldr r0, [r0]
+    ldr r0, [r0]
+    msr msp, r0
+    cpsie i
+    cpsie f
+    dsb
+    isb
+
+    svc 0 @ Call SVC handler to switch task
+    nop
+
+.thumb_func
+.global pJump_First_Task
+pJump_First_Task:
+    ldr r3, =current_task
+    ldr r1, [r3]
+    ldr r0, [r1]
+
+    ldmia r0!, {r4-r11,lr}
+    msr psp, r0
+    isb
+
+    @ enable interrupts (basepri = 0)
+    mov r0, #0
+    msr basepri, r0
+
+    bx lr

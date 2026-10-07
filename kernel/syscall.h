@@ -1,3 +1,4 @@
 #pragma once
 
-#define SYSCALL_TASK_SWITCH 0
+#define SYSCALL_JUMP_FIRST_TASK 0
+#define SYSCALL_TASK_SWITCH 1

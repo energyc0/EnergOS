@@ -6,6 +6,8 @@
 uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void));
 void pScheduler_Init(void);
 void _pScheduler_Start(uint32_t *stack_top, void (*task_entry)(void));
+void pStart_First_Task(void);
+void pJump_First_Task(void);
 // Yield the current task and switch to the next one
 void pTask_Yield(void);
 // High privilige task switch, used by the kernel to switch tasks
@@ -21,4 +23,5 @@ int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms);
 
 /* Interrupts */
 void pDisable_IRQ(void);
+void pEnable_IRQ(void);
 int pSetup_Timer_IRQ(void);

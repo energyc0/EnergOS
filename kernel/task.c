@@ -24,6 +24,10 @@ uint32_t task_count = 0;
 uint32_t task_start_id = 1;
 task_t *current_task = 0;
 
+static void Idle_Task(void) { while (1); }
+
+void Zombie_Task(void) { while (1); }
+
 void Init_Task(task_t *task, uint32_t tid, const char *name,
                void (*entry)(void)) {
   task->entry = entry;
@@ -65,6 +69,11 @@ void Scheduler_Switch(void) {
 }
 
 void Scheduler_Start(void) {
-  Scheduler_Switch();
-  _pScheduler_Start(current_task->sp, current_task->entry);
+  Task_Create("Idle_Task", Idle_Task);
+  pDisable_IRQ();
+  pScheduler_Init();
+  current_task = &tasks[0];
+  pEnable_IRQ();
+  // Pick the first task
+  pStart_First_Task();
 }

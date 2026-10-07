@@ -1,6 +1,8 @@
+#include <stdatomic.h>
 #include <stdint.h>
 
 #include "kassert.h"
+#include "portable.h"
 #include "task.h"
 
 /*
@@ -18,21 +20,22 @@ void GPIO_Init() {
 
 void task1() {
   while (1) {
-    pUART_SendString("1\r\n");
+    pUART_SendString("task1\n\r");
+    pDelay(1);
   }
 }
 
 void task2() {
   while (1) {
-    pUART_SendString("2\r\n");
+    pUART_SendString("task2\n\r");
+    pDelay(1);
   }
 }
 
 void main() {
   pUART_SendString("Hello!\r\n");
 
-  pScheduler_Init();
-  Task_Create("task1", task1);
   Task_Create("task2", task2);
+  Task_Create("task1", task1);
   Scheduler_Start();
 }

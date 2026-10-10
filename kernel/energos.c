@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "io.h"
+#include "portable.h"
 #include "task.h"
 
 /*
@@ -18,21 +19,27 @@ void GPIO_Init() {
 */
 
 void task1() {
+  char buf[256];
   while (1) {
-    Print_Str("task1\n\r");
-    // pDelay(1);
+    // char c;
+    // if (Read_Char(&c)) {
+    //   Write_Char(c);
+    // }
+
+    Read_Str(buf, sizeof(buf));
+    Write_Str(buf);
+    pDelay(1);
   }
 }
-
 void task2() {
   while (1) {
-    Print_Str("task2\n\r");
-    // pDelay(1);
+    // Write_Str("task2\n\r");
+    pDelay(1);
   }
 }
 
 void main() {
-  Print_Str("Hello!\r\n");
+  Write_Str("Hello!\r\n");
 
   Task_Create("task2", task2);
   Task_Create("task1", task1);

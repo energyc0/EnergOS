@@ -20,6 +20,8 @@ void pDelay(uint32_t delay);
 /* UART */
 void pUART_SendString(const char *str);
 void pUART_SendByte(uint8_t byte);
+// Read a single byte from UART with blocking,
+// returns 1 if a byte was read, 0 if timeout occurred
 int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms);
 
 /* Interrupts */

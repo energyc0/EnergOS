@@ -4,6 +4,7 @@ syscall.c
 task.c
 io.c
 spinlock.c
+shell.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})

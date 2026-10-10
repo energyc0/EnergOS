@@ -9,7 +9,7 @@ static spinlock_t uart_spinlock;
 
 int __Read_Char(char* c) { return pUART_ReceiveByte((uint8_t*)c, MAX_DELAY); }
 void __Write_Char(char c) {
-  if (c == '\r') {
+  if (c == '\r' || c == '\n') {
     pUART_SendString("\r\n");
   } else {
     pUART_SendByte(c);

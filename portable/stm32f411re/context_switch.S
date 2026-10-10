@@ -37,6 +37,8 @@ SVC_Handler:
     mrsne r0, psp
     b SVC_Handler_C
 
+#include "syscall.h"
+
 .thumb_func
 .global pStart_First_Task
 pStart_First_Task:
@@ -49,7 +51,7 @@ pStart_First_Task:
     dsb
     isb
 
-    svc 0 @ Call SVC handler to switch task
+    svc #SYSCALL_JUMP_FIRST_TASK @ Call SVC handler to switch task
     nop
 
 .thumb_func
@@ -68,3 +70,4 @@ pJump_First_Task:
     msr basepri, r0
 
     bx lr
+    

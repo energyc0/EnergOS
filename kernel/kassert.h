@@ -1,4 +1,5 @@
-#pragma once
+#ifndef KASSERT_H
+#define KASSERT_H
 
 #include "portable.h"
 
@@ -13,3 +14,5 @@
   do {                        \
     if ((expr) == 0) panic(); \
   } while (0)
+
+#endif

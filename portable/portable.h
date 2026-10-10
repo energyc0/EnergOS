@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PORTABLE_H
+#define PORTABLE_H
 
 #include <stdint.h>
 
@@ -25,3 +26,5 @@ int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms);
 void pDisable_IRQ(void);
 void pEnable_IRQ(void);
 int pSetup_Timer_IRQ(void);
+
+#endif

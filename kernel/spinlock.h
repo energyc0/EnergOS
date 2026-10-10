@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SPINLOCK_H
+#define SPINLOCK_H
 
 #include <stdatomic.h>
 #include <stdint.h>
@@ -12,3 +13,5 @@ typedef struct spinlock {
 
 void lock(spinlock_t* lck);
 void unlock(spinlock_t* lck);
+
+#endif

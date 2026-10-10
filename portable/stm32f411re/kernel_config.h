@@ -1,6 +1,9 @@
-#pragma once
+#ifndef KERNEL_CONFIG_H
+#define KERNEL_CONFIG_H
 
 #define TASK_STACK_SIZE 256
 #define NTASKS 16
 #define F_CPU 16000000UL
 #define TIMER_TICK F_CPU / 1000 - 1
+
+#endif

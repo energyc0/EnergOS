@@ -35,6 +35,6 @@ jobs:
           find . -not -path "./third_party/*" \
             -not -path "./build/*" \
             \( -iname '*.c' -o -iname '*.h' \) \
-            | xargs clang-format --dry-run --Werror
+            | xargs clang-format --dry-run --Werror --Wno-error=unknown
 
   

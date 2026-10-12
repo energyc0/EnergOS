@@ -5,7 +5,7 @@
 
 #define MAX_DELAY (0xFFFFFFFF)
 
-static mutex_t uart_mutex;
+// static mutex_t uart_mutex;
 
 int __Read_Char(char* c) { return pUART_ReceiveByte((uint8_t*)c, MAX_DELAY); }
 void __Write_Char(char c) {
@@ -16,11 +16,7 @@ void __Write_Char(char c) {
   }
 }
 
-void Write_Str(const char* s) {
-  mutex_lock(&uart_mutex);
-  pUART_SendString(s);
-  mutex_unlock(&uart_mutex);
-}
+void Write_Str(const char* s) { pUART_SendString(s); }
 
 void Write_Int(int n) {
   char buf[12];
@@ -43,26 +39,17 @@ void Write_Int(int n) {
     *--p = '-';
   }
 
-  mutex_lock(&uart_mutex);
   pUART_SendString(p);
-  mutex_unlock(&uart_mutex);
 }
 
-void Write_Char(char c) {
-  mutex_lock(&uart_mutex);
-  __Write_Char(c);
-  mutex_unlock(&uart_mutex);
-}
+void Write_Char(char c) { __Write_Char(c); }
 
 int Read_Char(char* c) {
-  mutex_lock(&uart_mutex);
   int ret = __Read_Char(c);
-  mutex_unlock(&uart_mutex);
   return ret;
 }
 
 int Read_Str(char* buf, uint32_t size) {
-  mutex_lock(&uart_mutex);
   int ret = 0;
   uint32_t i = 0;
   for (; i < size - 1; i++) {
@@ -70,6 +57,5 @@ int Read_Str(char* buf, uint32_t size) {
     if (ret == 0 || buf[i] == '\r' || buf[i] == '\n') break;
   }
   buf[i] = '\0';
-  mutex_unlock(&uart_mutex);
   return ret;
 }

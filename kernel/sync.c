@@ -13,12 +13,10 @@ static void IRQ_OFF_Numeric() {
 }
 
 static void IRQ_ON_Numeric() {
-  atomic_fetch_sub(&irq_queries_number, 1);
   int32_t num = atomic_load(&irq_queries_number);
-  if (num == 0) {
-    pEnable_IRQ();
-  } else if (num < 0) {
-    panic("IRQ_ON_Numeric() - invalid irq_queries_number");
+  if (num > 0) {
+    if (num == 1) pEnable_IRQ();
+    atomic_fetch_sub(&irq_queries_number, 1);
   }
 }
 
@@ -38,7 +36,7 @@ void mutex_lock(mutex_t* mtx) {
     IRQ_OFF_Numeric();
     if (atomic_flag_test_and_set(&mtx->locked)) {
       IRQ_ON_Numeric();
-      pTask_Yield();
+      Task_Yield();
     } else {
       mtx->task = current_task;
       break;
@@ -52,6 +50,12 @@ void semaphore_init(semaphore_t* sem, int32_t limit) {
   atomic_store(&sem->limit, limit);
 }
 
+int mutex_try_lock(mutex_t* mtx) {
+  if (atomic_flag_test_and_set(&mtx->locked)) return 0;
+  mtx->task = current_task;
+  return 1;
+}
+
 void semaphore_wait(semaphore_t* sem) {
   while (1) {
     IRQ_OFF_Numeric();
@@ -63,7 +67,7 @@ void semaphore_wait(semaphore_t* sem) {
     }
 
     IRQ_ON_Numeric();
-    pTask_Yield();
+    Task_Yield();
   }
 }
 void semaphore_signal(semaphore_t* sem) {

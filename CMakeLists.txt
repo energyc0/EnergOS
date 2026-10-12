@@ -20,6 +20,7 @@ add_link_options(-nostdlib)
 set(THIRD_PARTY ${PROJECT_SOURCE_DIR}/third_party)
 set(PORT_DIR ${PROJECT_SOURCE_DIR}/portable)
 set(KERNEL_DIR ${PROJECT_SOURCE_DIR}/kernel)
+set(USER_DIR ${PROJECT_SOURCE_DIR}/user)
 
 add_subdirectory(${THIRD_PARTY})
 add_subdirectory(${PORT_DIR})
@@ -30,6 +31,7 @@ message(STATUS "Linker script: ${LINKER_SCRIPT}")
 add_link_options("-T${LINKER_SCRIPT}")
 
 add_subdirectory(${KERNEL_DIR})
+add_subdirectory(${USER_DIR})
 
 add_custom_target(debug_server COMMAND
     openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)

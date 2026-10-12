@@ -38,10 +38,6 @@ void _pScheduler_Start(uint32_t *stack_top, void (*task_entry)(void)) {
   while (1);
 }
 
-void pTask_Yield(void) {
-  __asm volatile("SVC %0" : : "n"(SYSCALL_TASK_SWITCH));
-}
-
 void pScheduler_Init(void) {
   // No preemtion, only subpriority
   HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);

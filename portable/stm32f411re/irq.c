@@ -20,7 +20,7 @@ void pPend_Task_Switch(void) {
 void SVC_Handler_C(uint32_t* stack_frame) {
   /*
       Exception stack frame has
-      R0, R2, R3, R12, LR, return address and RETPSR
+      R0, R1, R2, R3, R12, LR, return address and RETPSR
       registers on the stack in order.
   */
 

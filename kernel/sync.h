@@ -18,6 +18,8 @@ typedef spinlock_t mutex_t;
 
 void mutex_lock(mutex_t* mtx);
 void mutex_unlock(mutex_t* mtx);
+// Returns 1 if the mutex was successfully locked, 0 otherwise
+int mutex_try_lock(mutex_t* mtx);
 
 typedef struct semaphore {
   atomic_int value;

@@ -1,6 +1,7 @@
 #include "shell.h"
 
 #include "io.h"
+#include "kernel_config.h"
 #include "stdint.h"
 
 #define SHELL_MAX_LINE 128u
@@ -13,6 +14,8 @@
 static void CMD_Help(int argc, char** argv);
 static void CMD_Echo(int argc, char** argv);
 
+extern void Print_Tasks(int argc, char** argv);
+
 typedef struct {
   const char* name;
   void (*fn)(int argc, char** argv);
@@ -22,6 +25,7 @@ typedef struct {
 static const ShellCmd g_cmds[] = {
     {"help", CMD_Help, "show this help"},
     {"echo", CMD_Echo, "echo arguments"},
+    {"ts", Print_Tasks, "task list"},
 };
 #define CMD_COUNT (sizeof(g_cmds) / sizeof(g_cmds[0]))
 

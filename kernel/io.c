@@ -22,6 +22,32 @@ void Write_Str(const char* s) {
   mutex_unlock(&uart_mutex);
 }
 
+void Write_Int(int n) {
+  char buf[12];
+  char* p = buf + sizeof(buf) - 1;
+  *p = '\0';
+
+  unsigned int u;
+  if (n < 0) {
+    u = (unsigned int)(-(n + 1)) + 1u;
+  } else {
+    u = (unsigned int)n;
+  }
+
+  do {
+    *--p = (char)('0' + (u % 10));
+    u /= 10;
+  } while (u != 0);
+
+  if (n < 0) {
+    *--p = '-';
+  }
+
+  mutex_lock(&uart_mutex);
+  pUART_SendString(p);
+  mutex_unlock(&uart_mutex);
+}
+
 void Write_Char(char c) {
   mutex_lock(&uart_mutex);
   __Write_Char(c);

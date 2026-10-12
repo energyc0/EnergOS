@@ -9,6 +9,7 @@
 
 void Write_Str(const char* s);
 void Write_Char(char c);
+void Write_Int(int n);
 
 // Read a single byte from UART with blocking,
 // returns 1 if a byte was read, 0 if timeout occurred

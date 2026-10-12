@@ -28,6 +28,34 @@ static void Idle_Task(void) { while (1); }
 
 void Zombie_Task(void) { while (1); }
 
+#include "io.h"
+void Print_Tasks(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
+  for (int i = 0; i < NTASKS; i++) {
+    if (tasks[i].state != T_UNUSED) {
+      Write_Str("Task name: ");
+      Write_Str(tasks[i].name);
+      Write_Str(" ,TID: ");
+      Write_Int(tasks[i].tid);
+      Write_Str(" , state: ");
+      const char *state_str = 0;
+      switch (tasks[i].state) {
+        case T_READY:
+          state_str = "READY";
+          break;
+        case T_RUNNING:
+          state_str = "RUNNING";
+          break;
+        default:
+          panic("Undefined task state");
+      }
+      Write_Str(state_str);
+      Write_Char('\n');
+    }
+  }
+}
+
 void Init_Task(task_t *task, uint32_t tid, const char *name,
                void (*entry)(void)) {
   task->entry = entry;

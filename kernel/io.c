@@ -5,7 +5,7 @@
 
 #define MAX_DELAY (0xFFFFFFFF)
 
-static spinlock_t uart_spinlock;
+static mutex_t uart_mutex;
 
 int __Read_Char(char* c) { return pUART_ReceiveByte((uint8_t*)c, MAX_DELAY); }
 void __Write_Char(char c) {
@@ -17,26 +17,26 @@ void __Write_Char(char c) {
 }
 
 void Write_Str(const char* s) {
-  spinlock_lock(&uart_spinlock);
+  mutex_lock(&uart_mutex);
   pUART_SendString(s);
-  spinlock_unlock(&uart_spinlock);
+  mutex_unlock(&uart_mutex);
 }
 
 void Write_Char(char c) {
-  spinlock_lock(&uart_spinlock);
+  mutex_lock(&uart_mutex);
   __Write_Char(c);
-  spinlock_unlock(&uart_spinlock);
+  mutex_unlock(&uart_mutex);
 }
 
 int Read_Char(char* c) {
-  spinlock_lock(&uart_spinlock);
+  mutex_lock(&uart_mutex);
   int ret = __Read_Char(c);
-  spinlock_unlock(&uart_spinlock);
+  mutex_unlock(&uart_mutex);
   return ret;
 }
 
 int Read_Str(char* buf, uint32_t size) {
-  spinlock_lock(&uart_spinlock);
+  mutex_lock(&uart_mutex);
   int ret = 0;
   uint32_t i = 0;
   for (; i < size - 1; i++) {
@@ -44,6 +44,6 @@ int Read_Str(char* buf, uint32_t size) {
     if (ret == 0 || buf[i] == '\r' || buf[i] == '\n') break;
   }
   buf[i] = '\0';
-  spinlock_unlock(&uart_spinlock);
+  mutex_unlock(&uart_mutex);
   return ret;
 }

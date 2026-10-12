@@ -3,7 +3,7 @@ ${FIRMWARE_NAME}.c
 syscall.c
 task.c
 io.c
-spinlock.c
+sync.c
 shell.c
 )
 

@@ -12,6 +12,6 @@ void Syscall_Handler(uint32_t sysnum) {
       pPend_Task_Switch();
       break;
     default:
-      panic();
+      panic("Undefined syscall number");
   }
 }

@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #include "portable.h"
-#include "spinlock.h"
+#include "sync.h"
 
 #define MAX_DELAY (0xFFFFFFFF)
 
@@ -17,26 +17,26 @@ void __Write_Char(char c) {
 }
 
 void Write_Str(const char* s) {
-  lock(&uart_spinlock);
+  spinlock_lock(&uart_spinlock);
   pUART_SendString(s);
-  unlock(&uart_spinlock);
+  spinlock_unlock(&uart_spinlock);
 }
 
 void Write_Char(char c) {
-  lock(&uart_spinlock);
+  spinlock_lock(&uart_spinlock);
   __Write_Char(c);
-  unlock(&uart_spinlock);
+  spinlock_unlock(&uart_spinlock);
 }
 
 int Read_Char(char* c) {
-  lock(&uart_spinlock);
+  spinlock_lock(&uart_spinlock);
   int ret = __Read_Char(c);
-  unlock(&uart_spinlock);
+  spinlock_unlock(&uart_spinlock);
   return ret;
 }
 
 int Read_Str(char* buf, uint32_t size) {
-  lock(&uart_spinlock);
+  spinlock_lock(&uart_spinlock);
   int ret = 0;
   uint32_t i = 0;
   for (; i < size - 1; i++) {
@@ -44,6 +44,6 @@ int Read_Str(char* buf, uint32_t size) {
     if (ret == 0 || buf[i] == '\r' || buf[i] == '\n') break;
   }
   buf[i] = '\0';
-  unlock(&uart_spinlock);
+  spinlock_unlock(&uart_spinlock);
   return ret;
 }

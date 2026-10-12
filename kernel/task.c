@@ -50,7 +50,7 @@ extern void Error_Handler(void);
 
 void Scheduler_Switch(void) {
   if (current_task == 0) {
-    if (task_count == 0) panic();
+    if (task_count == 0) panic("There are no tasks to schedule");
     current_task = &tasks[0];
     return;
   }

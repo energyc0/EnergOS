@@ -1,0 +1,9 @@
+#ifndef SYSCALL_DEFS_H
+#define SYSCALL_DEFS_H
+
+#define SYSCALL_JUMP_FIRST_TASK 0
+#define SYSCALL_YIELD 1
+#define SYSCALL_EXIT 2
+#define SYSCALL_CREATE 3
+
+#endif

@@ -22,8 +22,15 @@ void pUART_SendByte(uint8_t byte);
 // returns 1 if a byte was read, 0 if timeout occurred
 int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms);
 
+uint32_t pSystem_Call(uint32_t sysnum);
+uint32_t pSystem_Call_Arg1(uint32_t sysnum, uint32_t arg0);
+uint32_t pSystem_Call_Arg2(uint32_t sysnum, uint32_t arg0, uint32_t arg1);
+uint32_t pSystem_Call_Arg3(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                           uint32_t arg2);
+uint32_t pSystem_Call_Arg4(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                           uint32_t arg2, uint32_t arg3);
+
 /* Interrupts */
-#define pSystem_Call(sysnum) __asm volatile("SVC %0" : : "n"(sysnum))
 
 // Save the current IRQ state and disable interrupts
 uint32_t pIRQ_Save(void);

@@ -4,10 +4,9 @@
 #include "cmsis_gcc.h"
 #include "io.h"
 #include "portable.h"
+#include "syscall.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
-
-extern void Syscall_Handler(uint32_t);
 
 typedef struct {
   uint32_t r0;
@@ -36,11 +35,9 @@ void SVC_Handler_C(uint32_t *stack_frame) {
       registers on the stack in order.
   */
 
-  // Extract svc number from opcode (first 8 bit)
-  uint16_t *ptr = (uint16_t *)stack_frame[6] - 1;
-  uint32_t svc_id = (uint32_t)*ptr & 0xFF;
-  // Enter kernel
-  Syscall_Handler(svc_id);
+  // r0 carries the syscall number; arguments occupy r1-r3 and r12.
+  Syscall_Handler(stack_frame[0], stack_frame[1], stack_frame[2],
+                  stack_frame[3], stack_frame[4], &stack_frame[0]);
 }
 
 void SysTick_Handler(void) {
@@ -91,3 +88,51 @@ void pIRQ_Restore(uint32_t state) { __set_PRIMASK(state); }
 void pDisable_IRQ(void) { __disable_irq(); }
 
 void pEnable_IRQ(void) { __enable_irq(); }
+
+uint32_t pSystem_Call(uint32_t sysnum) {
+  register uint32_t r0 __asm__("r0") = sysnum;
+  __asm volatile("svc 0" : "+r"(r0) : : "memory");
+  return r0;
+}
+
+uint32_t pSystem_Call_Arg1(uint32_t sysnum, uint32_t arg0) {
+  register uint32_t r0 __asm__("r0") = sysnum;
+  register uint32_t r1 __asm__("r1") = arg0;
+  __asm volatile("svc 0" : "+r"(r0) : "r"(r1) : "memory");
+  return r0;
+}
+
+uint32_t pSystem_Call_Arg2(uint32_t sysnum, uint32_t arg0, uint32_t arg1) {
+  register uint32_t r0 __asm__("r0") = sysnum;
+  register uint32_t r1 __asm__("r1") = arg0;
+  register uint32_t r2 __asm__("r2") = arg1;
+  __asm volatile("svc 0" : "+r"(r0) : "r"(r1), "r"(r2) : "memory");
+  return r0;
+}
+
+uint32_t pSystem_Call_Arg3(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                           uint32_t arg2) {
+  register uint32_t r0 __asm__("r0") = sysnum;
+  register uint32_t r1 __asm__("r1") = arg0;
+  register uint32_t r2 __asm__("r2") = arg1;
+  register uint32_t r3 __asm__("r3") = arg2;
+  __asm volatile("svc 0"
+                 : "+r"(r0)
+                 : "r"(r1), "r"(r2), "r"(r3)
+                 : "memory");
+  return r0;
+}
+
+uint32_t pSystem_Call_Arg4(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                           uint32_t arg2, uint32_t arg3) {
+  register uint32_t r0 __asm__("r0") = sysnum;
+  register uint32_t r1 __asm__("r1") = arg0;
+  register uint32_t r2 __asm__("r2") = arg1;
+  register uint32_t r3 __asm__("r3") = arg2;
+  register uint32_t r12 __asm__("r12") = arg3;
+  __asm volatile("svc 0"
+                 : "+r"(r0)
+                 : "r"(r1), "r"(r2), "r"(r3), "r"(r12)
+                 : "memory");
+  return r0;
+}

@@ -145,4 +145,4 @@ void Scheduler_Start(void) {
 
 task_t *Get_Current_Task(void) { return current_task; }
 
-void Task_Yield(void) { pSystem_Call(SYSCALL_YIELD); }
+void Task_Yield(void) { Yield(); }

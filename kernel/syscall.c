@@ -1,25 +1,33 @@
 #include "syscall.h"
 
+#include <stdint.h>
+
 #include "kassert.h"
 #include "portable.h"
+#include "syscall_defs.h"
 #include "task.h"
 
-void Syscall_Exit(void) {
+void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
+void Yield(void) { pSystem_Call(SYSCALL_YIELD); }
+void Exit(void) { pSystem_Call(SYSCALL_EXIT); }
+uint32_t Create(const char *name, void (*entry)(void)) {
+  return pSystem_Call_Arg2(SYSCALL_CREATE, (uint32_t)(uintptr_t)name,
+                           (uint32_t)(uintptr_t)entry);
+}
+
+static void Syscall_Exit(void) {
   Task_Delete(Get_Current_Task());
   pPend_Task_Switch();
 }
 
-void Syscall_Create(void) {
-  /*
-  mutex_lock(&tasks_mutex);
-  task_t* task = Get_Current_Task();
-  task->state = T_UNUSED;
-  mutex_unlock(&task->task_mutex);
-  mutex_unlock(&tasks_mutex);
-  */
+static uint32_t Syscall_Create(const char *name, void (*entry)(void)) {
+  return Task_Create(name, entry);
 }
 
-void Syscall_Handler(uint32_t sysnum) {
+void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                     uint32_t arg2, uint32_t arg3, uint32_t *ret) {
+  (void)arg2;
+  (void)arg3;
   switch (sysnum) {
     case SYSCALL_JUMP_FIRST_TASK:
       pJump_First_Task();
@@ -31,7 +39,8 @@ void Syscall_Handler(uint32_t sysnum) {
       Syscall_Exit();
       break;
     case SYSCALL_CREATE:
-      Syscall_Create();
+      *ret = Syscall_Create((const char *)(uintptr_t)arg0,
+                            (void (*)(void))(uintptr_t)arg1);
       break;
     default:
       panic("Undefined syscall number");

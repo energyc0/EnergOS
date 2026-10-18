@@ -4,12 +4,11 @@
 #include "io.h"
 #include "portable.h"
 #include "shell.h"
+#include "syscall.h"
 #include "task.h"
 
-extern void Syscall_Exit(void);
-
 void task1() {
-  Syscall_Exit();
+  Exit();
   while (1) {
     pDelay(1);
   }
@@ -17,7 +16,7 @@ void task1() {
 void task2() {
   while (1) {
     pDelay(1);
-    Syscall_Exit();
+    Exit();
   }
 }
 

@@ -25,6 +25,10 @@ int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms);
 /* Interrupts */
 #define pSystem_Call(sysnum) __asm volatile("SVC %0" : : "n"(sysnum))
 
+// Save the current IRQ state and disable interrupts
+uint32_t pIRQ_Save(void);
+// Restore the IRQ state to the given value
+void pIRQ_Restore(uint32_t state);
 void pDisable_IRQ(void);
 void pEnable_IRQ(void);
 int pSetup_Timer_IRQ(void);

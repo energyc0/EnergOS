@@ -81,6 +81,13 @@ void HardFault_Hander_C(HardFaultRegs_t *regs) {
   while (1);
 }
 
+uint32_t pIRQ_Save(void) {
+  uint32_t primask = __get_PRIMASK();
+  __disable_irq();
+  return primask;
+}
+void pIRQ_Restore(uint32_t state) { __set_PRIMASK(state); }
+
 void pDisable_IRQ(void) { __disable_irq(); }
 
 void pEnable_IRQ(void) { __enable_irq(); }

@@ -5,39 +5,46 @@
 
 #define MAX_DELAY (0xFFFFFFFF)
 
-static const char k_hex[] = "0123456789ABCDEF";
+static const uint8_t k_hex[] = "0123456789ABCDEF";
 
-// static mutex_t uart_mutex;
+static mutex_t uart_mutex;
 
-int __Read_Char(char* c) { return pUART_ReceiveByte((uint8_t*)c, MAX_DELAY); }
-void __Write_Char(char c) {
+uint32_t __Read_Char(char* c) {
+  return pUART_ReceiveByte((uint8_t*)c, MAX_DELAY);
+}
+uint32_t __Write_Char(char c) {
   if (c == '\n') {
-    pUART_SendString("\r\n");
+    return pUART_SendString((const uint8_t*)"\r\n");
   } else if (c != '\r') {
-    pUART_SendByte(c);
+    return pUART_SendByte(c);
   }
+  return 0;
 }
 
-void Write_Str(const char* s) {
+uint32_t Write_Str(const char* s) {
+  mutex_lock(&uart_mutex);
+  uint32_t amount = 0;
   for (uint32_t i = 0; s[i] != '\0'; i++) {
-    __Write_Char(s[i]);
+    amount += __Write_Char(s[i]);
   }
+  mutex_unlock(&uart_mutex);
+  return amount;
 }
 
-void Write_Int(int n) {
-  char buf[12];
-  char* p = buf + sizeof(buf) - 1;
+uint32_t Write_Int(int32_t n) {
+  uint8_t buf[12];
+  uint8_t* p = buf + sizeof(buf) - 1;
   *p = '\0';
 
-  unsigned int u;
+  uint32_t u;
   if (n < 0) {
-    u = (unsigned int)(-(n + 1)) + 1u;
+    u = (uint32_t)(-(n + 1)) + 1u;
   } else {
-    u = (unsigned int)n;
+    u = (uint32_t)n;
   }
 
   do {
-    *--p = (char)('0' + (u % 10));
+    *--p = (uint8_t)('0' + (u % 10));
     u /= 10;
   } while (u != 0);
 
@@ -45,17 +52,14 @@ void Write_Int(int n) {
     *--p = '-';
   }
 
-  pUART_SendString(p);
+  return pUART_SendString(p);
 }
 
-void Write_Char(char c) { __Write_Char(c); }
+uint32_t Write_Char(char c) { return __Write_Char(c); }
 
-int Read_Char(char* c) {
-  int ret = __Read_Char(c);
-  return ret;
-}
+uint32_t Read_Char(char* c) { return __Read_Char(c); }
 
-int Read_Str(char* buf, uint32_t size) {
+uint32_t Read_Str(char* buf, uint32_t size) {
   if (buf == 0 || size == 0) return -1;
   int ret = 0;
   uint32_t i = 0;
@@ -68,11 +72,11 @@ int Read_Str(char* buf, uint32_t size) {
   return ret;
 }
 
-void Write_Hex(uint32_t v) {
-  char buf[11];
+uint32_t Write_Hex(uint32_t v) {
+  uint8_t buf[11];
   buf[0] = '0';
   buf[1] = 'x';
   for (int i = 0; i < 8; i++) buf[2 + i] = k_hex[(v >> (28 - 4 * i)) & 0xFu];
   buf[10] = '\0';
-  pUART_SendString(buf);
+  return pUART_SendString(buf);
 }

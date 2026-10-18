@@ -3,13 +3,13 @@
 
 #include "portable.h"
 
-#define panic(msg)              \
-  do {                          \
-    pDisable_IRQ();             \
-    pUART_SendString("PANIC!"); \
-    pUART_SendString(msg);      \
-    pUART_SendString("\r\n");   \
-    while (1);                  \
+#define panic(msg)                              \
+  do {                                          \
+    pDisable_IRQ();                             \
+    pUART_SendString((const uint8_t*)"PANIC!"); \
+    pUART_SendString((const uint8_t*)msg);      \
+    pUART_SendString((const uint8_t*)"\n");     \
+    while (1);                                  \
   } while (0)
 
 #define kassert(expr)                           \

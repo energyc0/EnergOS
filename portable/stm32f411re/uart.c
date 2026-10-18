@@ -3,6 +3,7 @@
 
 #include "portable.h"
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_def.h"
 
 UART_HandleTypeDef huart2;
 
@@ -31,16 +32,43 @@ int pUART_Init(void) {
   return HAL_UART_Init(&huart2) == HAL_OK;
 }
 
-void pUART_SendByte(uint8_t byte) {
-  HAL_UART_Transmit(&huart2, &byte, 1, HAL_MAX_DELAY);
+uint32_t pUART_SendByte(uint8_t byte) {
+  HAL_StatusTypeDef status =
+      HAL_UART_Transmit(&huart2, &byte, 1, HAL_MAX_DELAY);
+  switch (status) {
+    case HAL_OK:
+      return 1;
+    case HAL_BUSY:
+      return -1;
+    default:
+      return 0;
+  }
 }
 
-void pUART_SendString(const char *str) {
-  if (str == NULL) return;
-  HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
+uint32_t pUART_SendString(const uint8_t *str) {
+  if (str == NULL) return 0;
+  uint16_t size = strlen((const char *)str);
+  HAL_StatusTypeDef status =
+      HAL_UART_Transmit(&huart2, (uint8_t *)str, size, HAL_MAX_DELAY);
+  switch (status) {
+    case HAL_OK:
+      return size;
+    case HAL_BUSY:
+      return -1;
+    default:
+      return 0;
+  }
 }
 
-int pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
+uint32_t pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
   if (byte == NULL) return 0;
-  return (HAL_UART_Receive(&huart2, byte, 1, timeout_ms) == HAL_OK);
+  HAL_StatusTypeDef status = HAL_UART_Receive(&huart2, byte, 1, timeout_ms);
+  switch (status) {
+    case HAL_OK:
+      return 1;
+    case HAL_BUSY:
+      return -1;
+    default:
+      return 0;
+  }
 }

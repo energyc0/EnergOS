@@ -7,18 +7,23 @@
  */
 #include <stdint.h>
 
-void Write_Str(const char* s);
-void Write_Char(char c);
-void Write_Int(int n);
-void Write_Hex(uint32_t v);
+// Write a string to UART, returns the number of bytes written
+uint32_t Write_Str(const char* s);
+// Write a single character to UART, returns the number of bytes written
+uint32_t Write_Char(char c);
+// Write an integer to UART, returns the number of bytes written
+uint32_t Write_Int(int32_t n);
+// Write a hexadecimal representation of an integer to UART, returns the number
+// of bytes written
+uint32_t Write_Hex(uint32_t v);
 
 // Read a single byte from UART with blocking,
 // returns 1 if a byte was read, 0 if timeout occurred
-int Read_Char(char* c);
+uint32_t Read_Char(char* c);
 
 // Read a string from UART with blocking,
 // returns the number of bytes read, or 0 if timeout occurred.
 // The string will be null-terminated if at least one byte was read.
-int Read_Str(char* buf, uint32_t size);
+uint32_t Read_Str(char* buf, uint32_t size);
 
 #endif

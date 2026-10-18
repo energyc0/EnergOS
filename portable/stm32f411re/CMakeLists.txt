@@ -14,3 +14,6 @@ target_include_directories(PORT_LIB PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${PORT_DIR}
 target_include_directories(PORT_LIB PRIVATE ${KERNEL_DIR})
 target_include_directories(HAL PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(PORT_LIB PRIVATE HAL)
+
+add_custom_target(debug_server COMMAND
+    openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)

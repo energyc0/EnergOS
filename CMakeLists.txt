@@ -4,6 +4,7 @@ project(EnergOS C ASM)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
     add_compile_definitions(DEBUG)
+    add_compile_options(-Og -g3)
 endif()
 
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
@@ -14,7 +15,7 @@ set(FIRMWARE_NAME energos)
 set(MCU_DEVICE_FILE /dev/ttyACM0)
 
 #-ffunction-sections - for dead code elimination
-add_compile_options(-Wall -Wextra -Werror -Wunused-result -Og -Wno-main -O0 -g3 -ffunction-sections -fdata-sections -fno-pic -fno-pie -ffreestanding)
+add_compile_options(-Wall -Wextra -Werror -Wunused-result -Wno-main -O0 -ffunction-sections -fdata-sections -fno-pic -fno-pie -ffreestanding)
 add_link_options(-nostdlib)
 
 set(THIRD_PARTY ${PROJECT_SOURCE_DIR}/third_party)
@@ -32,9 +33,6 @@ add_link_options("-T${LINKER_SCRIPT}")
 
 add_subdirectory(${KERNEL_DIR})
 add_subdirectory(${USER_DIR})
-
-add_custom_target(debug_server COMMAND
-    openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)
 
 add_custom_target(minicom COMMAND
     minicom -D ${MCU_DEVICE_FILE} -b ${BAUDRATE})

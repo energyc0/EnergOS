@@ -6,23 +6,28 @@
 #include "shell.h"
 #include "syscall.h"
 #include "task.h"
-
-void task1() {
-  Exit();
+void p1(int argc, char** argv) {
+  (void)argc;
+  (void)argv;
   while (1) {
-    pDelay(1);
+    int status = Write_Str("a\n");
+    if (status == -1) pDelay(5);
   }
 }
-void task2() {
+
+void p2(int argc, char** argv) {
+  (void)argc;
+  (void)argv;
   while (1) {
-    pDelay(1);
-    Exit();
+    pToggle_LED();
+    int status = Write_Str("b\n");
+    if (status == -1) pDelay(5);
   }
 }
 
 void main() {
-  Task_Create("task2", task2);
-  Task_Create("task1", task1);
-  Task_Create("Shell", Shell_Start);
+  Task_Create("p1", p1);
+  Task_Create("p2", p2);
+  // Task_Create("Shell", Shell_Start);
   Scheduler_Start();
 }

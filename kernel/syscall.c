@@ -10,7 +10,7 @@
 void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
 void Yield(void) { pSystem_Call(SYSCALL_YIELD); }
 void Exit(void) { pSystem_Call(SYSCALL_EXIT); }
-uint32_t Create(const char *name, void (*entry)(void)) {
+uint32_t Create(const char *name, void (*entry)(int argc, char **argv)) {
   return pSystem_Call_Arg2(SYSCALL_CREATE, (uint32_t)(uintptr_t)name,
                            (uint32_t)(uintptr_t)entry);
 }
@@ -20,7 +20,8 @@ static void Syscall_Exit(void) {
   pPend_Task_Switch();
 }
 
-static uint32_t Syscall_Create(const char *name, void (*entry)(void)) {
+static uint32_t Syscall_Create(const char *name,
+                               void (*entry)(int argc, char **argv)) {
   return Task_Create(name, entry);
 }
 
@@ -40,7 +41,7 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       break;
     case SYSCALL_CREATE:
       *ret = Syscall_Create((const char *)(uintptr_t)arg0,
-                            (void (*)(void))(uintptr_t)arg1);
+                            (void (*)(int argc, char **argv))(uintptr_t)arg1);
       break;
     default:
       panic("Undefined syscall number");

@@ -18,9 +18,11 @@ uint32_t task_start_id = 1;
 // Need to lock tasks_mutex before using
 task_t *current_task = 0;
 
-static void Idle_Task(void) { while (1); }
-
-void Zombie_Task(void) { while (1); }
+static void Idle_Task(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
+  while (1);
+}
 
 #include "io.h"
 void Print_Tasks(int argc, char **argv) {
@@ -65,7 +67,7 @@ static task_t *Find_Free_Task(void) {
 }
 
 void Init_Task(task_t *task, uint32_t tid, const char *name,
-               void (*entry)(void)) {
+               void (*entry)(int argc, char **argv)) {
   task->entry = entry;
   task->sp = pTask_Stack_Init(
       (uint32_t *)((uint8_t *)task->stack + sizeof(task->stack)), entry);
@@ -74,7 +76,7 @@ void Init_Task(task_t *task, uint32_t tid, const char *name,
   task->state = T_READY;
 }
 
-uint32_t Task_Create(const char *name, void (*entry)(void)) {
+uint32_t Task_Create(const char *name, void (*entry)(int argc, char **argv)) {
   if (name == 0 || entry == 0) return 0;
 
   mutex_lock(&tasks_mutex);
@@ -144,5 +146,3 @@ void Scheduler_Start(void) {
 }
 
 task_t *Get_Current_Task(void) { return current_task; }
-
-void Task_Yield(void) { Yield(); }

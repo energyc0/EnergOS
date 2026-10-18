@@ -4,9 +4,10 @@
 #include "cmsis_gcc.h"
 #include "io.h"
 #include "portable.h"
-#include "syscall.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
+#include "syscall.h"
 
 typedef struct {
   uint32_t r0;
@@ -41,12 +42,12 @@ void SVC_Handler_C(uint32_t *stack_frame) {
 }
 
 void SysTick_Handler(void) {
-  // static uint32_t task_time_switch = 0;
+  static uint32_t task_time_switch_ms = 0;
   HAL_IncTick();
-  // if (++task_time_switch >= 1) {
-  SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-  //  task_time_switch = 0;
-  //}
+  if (++task_time_switch_ms >= 50) {
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+    task_time_switch_ms = 0;
+  }
 }
 
 void HardFault_Handler(void) __attribute__((naked));
@@ -116,10 +117,7 @@ uint32_t pSystem_Call_Arg3(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
   register uint32_t r1 __asm__("r1") = arg0;
   register uint32_t r2 __asm__("r2") = arg1;
   register uint32_t r3 __asm__("r3") = arg2;
-  __asm volatile("svc 0"
-                 : "+r"(r0)
-                 : "r"(r1), "r"(r2), "r"(r3)
-                 : "memory");
+  __asm volatile("svc 0" : "+r"(r0) : "r"(r1), "r"(r2), "r"(r3) : "memory");
   return r0;
 }
 

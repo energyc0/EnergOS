@@ -3,6 +3,6 @@
 
 #define SHELL_PROMPT "> "
 
-void Shell_Start(void);
+void Shell_Start(int argc, char **argv);
 
 #endif

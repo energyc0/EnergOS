@@ -4,6 +4,7 @@
 
 #include "kassert.h"
 #include "portable.h"
+#include "syscall.h"
 #include "task.h"
 
 extern task_t* current_task;
@@ -22,7 +23,7 @@ void mutex_lock(mutex_t* mtx) {
     uint32_t irq_state = pIRQ_Save();
     if (atomic_flag_test_and_set_explicit(&mtx->locked, memory_order_acquire)) {
       pIRQ_Restore(irq_state);
-      Task_Yield();
+      Yield();
     } else {
       mtx->task = current_task;
       pIRQ_Restore(irq_state);
@@ -55,7 +56,7 @@ void semaphore_wait(semaphore_t* sem) {
     }
 
     pIRQ_Restore(irq_state);
-    Task_Yield();
+    Yield();
   }
 }
 void semaphore_signal(semaphore_t* sem) {

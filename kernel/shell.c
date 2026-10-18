@@ -3,6 +3,8 @@
 #include "io.h"
 #include "kernel_config.h"
 #include "stdint.h"
+#include "syscall.h"
+#include "task.h"
 
 #define SHELL_MAX_LINE 128u
 #define SHELL_MAX_ARGS 16u
@@ -11,9 +13,9 @@
 #define SHELL_CR 0x0D
 #define SHELL_LF 0x0A
 
-static void CMD_Help(int argc, char** argv);
-static void CMD_Echo(int argc, char** argv);
-
+static void Help(int argc, char** argv);
+static void Echo(int argc, char** argv);
+static void Zombie_Task(int argc, char** argv);
 extern void Print_Tasks(int argc, char** argv);
 
 typedef struct {
@@ -23,9 +25,10 @@ typedef struct {
 } ShellCmd;
 
 static const ShellCmd g_cmds[] = {
-    {"help", CMD_Help, "show this help"},
-    {"echo", CMD_Echo, "echo arguments"},
+    {"help", Help, "show this help"},
+    {"echo", Echo, "echo arguments"},
     {"ts", Print_Tasks, "task list"},
+    {"zombie", Zombie_Task, "create a zombie task"},
 };
 #define CMD_COUNT (sizeof(g_cmds) / sizeof(g_cmds[0]))
 
@@ -103,7 +106,10 @@ static void Parse_Prompt(const char* cmd) {
       b++;
     }
     if (*a == '\0' && *b == '\0') {
-      g_cmds[i].fn(argc, argv);
+      uint32_t tid = Create(g_cmds[i].name, g_cmds[i].fn);
+      Write_Str("Created task with TID: ");
+      Write_Int(tid);
+      Write_Char('\n');
       return;
     }
   }
@@ -113,7 +119,9 @@ static void Parse_Prompt(const char* cmd) {
   Write_Str("\r\n");
 }
 
-void Shell_Start(void) {
+void Shell_Start(int argc, char** argv) {
+  (void)argc;
+  (void)argv;
   char line[SHELL_MAX_LINE];
 
   Write_Str("\r\nEnergOS shell. Type 'help' for commands.\r\n");
@@ -125,7 +133,7 @@ void Shell_Start(void) {
   }
 }
 
-static void CMD_Help(int argc, char** argv) {
+static void Help(int argc, char** argv) {
   uint32_t i;
   (void)argc;
   (void)argv;
@@ -138,11 +146,16 @@ static void CMD_Help(int argc, char** argv) {
   }
 }
 
-static void CMD_Echo(int argc, char** argv) {
+static void Echo(int argc, char** argv) {
   int i;
   for (i = 1; i < argc; i++) {
     if (i > 1) Write_Char(' ');
     Write_Str(argv[i]);
   }
   Write_Str("\r\n");
+}
+static void Zombie_Task(int argc, char** argv) {
+  (void)argc;
+  (void)argv;
+  while (1);
 }

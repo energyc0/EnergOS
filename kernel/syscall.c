@@ -2,18 +2,10 @@
 
 #include "kassert.h"
 #include "portable.h"
-#include "sync.h"
 #include "task.h"
 
-extern mutex_t tasks_mutex;
-extern uint32_t task_count;
-extern task_t* current_task;
-
 void Syscall_Exit(void) {
-  mutex_lock(&tasks_mutex);
-  task_t* task = Get_Current_Task();
-  Task_Delete(task);
-  mutex_unlock(&tasks_mutex);
+  Task_Delete(Get_Current_Task());
   pPend_Task_Switch();
 }
 

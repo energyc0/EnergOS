@@ -105,7 +105,8 @@ void Task_Delete(task_t *task) {
 }
 
 void Scheduler_Switch(void) {
-  mutex_lock(&tasks_mutex);
+  // PendSV cannot wait on a mutex held by the task it just preempted.
+  if (!mutex_try_lock(&tasks_mutex)) return;
   if (task_count == 0) {
     mutex_unlock(&tasks_mutex);
     return;

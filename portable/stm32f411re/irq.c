@@ -59,10 +59,10 @@ void HardFault_Handler(void) {
       "ite eq          \n"
       "mrseq r0, msp   \n"
       "mrsne r0, psp   \n"
-      "b HardFault_Hander_C \n");
+      "b HardFault_Handler_C \n");
 }
 
-void HardFault_Hander_C(HardFaultRegs_t *regs) {
+void HardFault_Handler_C(HardFaultRegs_t *regs) {
   Write_Str("Hard Fault Detected!\n");
   Write_Str("PC (Faulting Instruction): ");
   Write_Hex(regs->pc);

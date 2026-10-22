@@ -3,6 +3,7 @@ ${FIRMWARE_NAME}.c
 syscall.c
 task.c
 io.c
+uart_queue.c
 sync.c
 shell.c
 )

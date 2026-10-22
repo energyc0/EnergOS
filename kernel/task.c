@@ -2,10 +2,12 @@
 
 #include <stdint.h>
 
+#include "io.h"
 #include "kassert.h"
 #include "portable.h"
 #include "sync.h"
 #include "syscall.h"
+#include "uart_queue.h"
 
 // Mutex to access tasks[], task_count, current_task and task_start_id
 mutex_t tasks_mutex;
@@ -24,39 +26,51 @@ static void Idle_Task(int argc, char **argv) {
   while (1);
 }
 
-#include "io.h"
 void Print_Tasks(int argc, char **argv) {
   (void)argc;
   (void)argv;
+
+  struct task_info {
+    const char *name;
+    uint32_t tid;
+    enum task_state state;
+  } task_info[NTASKS];
+  uint32_t count = 0;
+
   mutex_lock(&tasks_mutex);
   for (int i = 0; i < NTASKS; i++) {
     mutex_lock(&tasks[i].task_mutex);
     if (tasks[i].state != T_UNUSED) {
-      Write_Str("Task name: ");
-      Write_Str(tasks[i].name);
-      Write_Str(" ,TID: ");
-      Write_Int(tasks[i].tid);
-      Write_Str(" , state: ");
-      const char *state_str = 0;
-      switch (tasks[i].state) {
-        case T_READY:
-          state_str = "READY";
-          break;
-        case T_RUNNING:
-          state_str = "RUNNING";
-          break;
-        case T_WAITING:
-          state_str = "WAITING";
-          break;
-        default:
-          panic("Undefined task state");
-      }
-      Write_Str(state_str);
-      Write_Char('\n');
+      task_info[count].name = tasks[i].name;
+      task_info[count].tid = tasks[i].tid;
+      task_info[count].state = tasks[i].state;
+      count++;
     }
     mutex_unlock(&tasks[i].task_mutex);
   }
   mutex_unlock(&tasks_mutex);
+
+  for (uint32_t i = 0; i < count; i++) {
+    Write_Str("Task name: ");
+    Write_Str(task_info[i].name);
+    Write_Str(" ,TID: ");
+    Write_Int(task_info[i].tid);
+    Write_Str(" , state: ");
+    switch (task_info[i].state) {
+      case T_READY:
+        Write_Str("READY");
+        break;
+      case T_RUNNING:
+        Write_Str("RUNNING");
+        break;
+      case T_WAITING:
+        Write_Str("WAITING");
+        break;
+      default:
+        panic("Undefined task state");
+    }
+    Write_Char('\n');
+  }
 }
 
 static task_t *Find_Free_Task(void) {
@@ -136,6 +150,7 @@ void Scheduler_Switch(void) {
 
 void Scheduler_Start(void) {
   Task_Create("Idle_Task", Idle_Task);
+  Uart_Queue_Init();
   pDisable_IRQ();
   pScheduler_Init();
   current_task = &tasks[0];

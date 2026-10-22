@@ -7,14 +7,14 @@
  */
 #include <stdint.h>
 
-// Write a string to UART, returns the number of bytes written
+// Queue a string for UART transmission, returns the number of bytes queued
 uint32_t Write_Str(const char* s);
-// Write a single character to UART, returns the number of bytes written
+// Queue a single character for UART transmission, returns the number of bytes queued
 uint32_t Write_Char(char c);
-// Write an integer to UART, returns the number of bytes written
+// Queue an integer for UART transmission, returns the number of bytes queued
 uint32_t Write_Int(int32_t n);
 // Write a hexadecimal representation of an integer to UART, returns the number
-// of bytes written
+// of bytes queued
 uint32_t Write_Hex(uint32_t v);
 
 // Read a single byte from UART with blocking,

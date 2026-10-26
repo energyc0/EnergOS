@@ -21,7 +21,7 @@ int Slab_Init(slab_t* slab, void* memory, uint32_t memory_size,
     return -1;
   }
 
-  mutex_lock(&slab->mutex);
+  spinlock_lock(&slab->lock);
   slab->obj_size = aligned_size;
   slab->capacity = memory_size / aligned_size;
   slab->free_count = slab->capacity;
@@ -41,7 +41,7 @@ int Slab_Init(slab_t* slab, void* memory, uint32_t memory_size,
   }
   current->next = NULL;
 
-  mutex_unlock(&slab->mutex);
+  spinlock_unlock(&slab->lock);
   return 0;
 }
 
@@ -51,7 +51,7 @@ void* Slab_Alloc(slab_t* slab) {
   }
 
   // Atomic operation: disable interrupts while modifying the list
-  mutex_lock(&slab->mutex);
+  spinlock_lock(&slab->lock);
 
   // Take first element from free list
   struct Slab_Header* allocated_ptr = slab->free_list;
@@ -61,7 +61,7 @@ void* Slab_Alloc(slab_t* slab) {
 
   slab->free_count--;
 
-  mutex_unlock(&slab->mutex);
+  spinlock_unlock(&slab->lock);
 
   return allocated_ptr;
 }
@@ -77,7 +77,7 @@ void Slab_Free(slab_t* slab, void* ptr) {
     panic("Slab invalid free");
   }
 
-  mutex_lock(&slab->mutex);
+  spinlock_lock(&slab->lock);
 
   // Add freed block to the beginning of free list
   ((struct Slab_Header*)ptr)->next = slab->free_list;
@@ -85,5 +85,5 @@ void Slab_Free(slab_t* slab, void* ptr) {
 
   slab->free_count++;
 
-  mutex_unlock(&slab->mutex);
+  spinlock_unlock(&slab->lock);
 }

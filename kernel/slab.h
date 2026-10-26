@@ -21,7 +21,7 @@ typedef struct Slab {
   struct Slab_Header*
       free_list;    // Pointer to first free object (head of free list)
   uint8_t* memory;  // Start of memory region allocated for this slab
-  mutex_t mutex;    // Mutex to access Slab's structure
+  spinlock_t lock;  // Spinlock to access Slab's structure
 } slab_t;
 
 /**

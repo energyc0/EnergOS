@@ -5,6 +5,7 @@ task.c
 io.c
 uart_queue.c
 sync.c
+slab.c
 shell.c
 )
 

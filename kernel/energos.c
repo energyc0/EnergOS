@@ -11,6 +11,7 @@ void p1(int argc, char** argv) {
   (void)argv;
   while (1) {
     Write_Str("a\n");
+    Sleep(1);
   }
 }
 
@@ -19,7 +20,7 @@ void p2(int argc, char** argv) {
   (void)argv;
   while (1) {
     pToggle_LED();
-    Write_Str("b\n");
+    Write_Str(" b\n");
   }
 }
 

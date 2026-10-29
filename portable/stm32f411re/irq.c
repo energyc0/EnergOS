@@ -9,6 +9,9 @@
 #include "stm32f4xx_hal_gpio.h"
 #include "syscall.h"
 
+extern void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                            uint32_t arg2, uint32_t arg3, uint32_t *ret);
+
 typedef struct {
   uint32_t r0;
   uint32_t r1;
@@ -45,7 +48,7 @@ void SysTick_Handler(void) {
   static uint32_t task_time_switch_ms = 0;
   HAL_IncTick();
   if (++task_time_switch_ms >= 50) {
-    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+    pPend_Task_Switch();
     task_time_switch_ms = 0;
   }
 }

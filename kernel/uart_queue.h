@@ -1,5 +1,5 @@
-#ifndef UART_TX_H
-#define UART_TX_H
+#ifndef UART_QUEUE_H
+#define UART_QUEUE_H
 
 #include <stdint.h>
 

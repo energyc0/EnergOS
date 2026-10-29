@@ -5,5 +5,7 @@
 #define SYSCALL_YIELD 1
 #define SYSCALL_EXIT 2
 #define SYSCALL_CREATE 3
+#define SYSCALL_SLEEP 4
+#define SYSCALL_WAKEUP 5
 
 #endif

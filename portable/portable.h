@@ -6,6 +6,7 @@
 /*Other*/
 // Toggle the LED on the board for debugging
 void pToggle_LED(void);
+uint32_t pGet_Tick(void);
 
 /* Scheduler */
 uint32_t *pTask_Stack_Init(uint32_t *stack_top,

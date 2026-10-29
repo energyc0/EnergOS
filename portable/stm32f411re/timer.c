@@ -25,3 +25,5 @@ int pSystemClock_Config(void) {
 }
 
 void pDelay(uint32_t delay) { HAL_Delay(delay); }
+
+uint32_t pGet_Tick(void) { return HAL_GetTick(); }

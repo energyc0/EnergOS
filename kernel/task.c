@@ -4,13 +4,14 @@
 
 #include "io.h"
 #include "kassert.h"
+#include "kernel_config.h"
 #include "portable.h"
 #include "sync.h"
 #include "syscall.h"
 #include "uart_queue.h"
 
 // Mutex to access tasks[], task_count, current_task and task_start_id
-mutex_t tasks_mutex;
+mutex_t tasks_mutex = MUTEX_INIT();
 // Need to lock tasks_mutex before using
 task_t tasks[NTASKS] = {};
 // Need to lock tasks_mutex before using
@@ -24,6 +25,23 @@ static void Idle_Task(int argc, char **argv) {
   (void)argc;
   (void)argv;
   while (1);
+}
+
+static void Alarm_Task(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
+  while (1) {
+    mutex_lock(&tasks_mutex);
+    for (uint32_t i = 0; i < NTASKS; i++) {
+      mutex_lock(&tasks[i].task_mutex);
+      if (tasks[i].state == T_WAITING && tasks[i].wakeup_time < pGet_Tick()) {
+        tasks[i].state = T_READY;
+      }
+      mutex_unlock(&tasks[i].task_mutex);
+    }
+    mutex_unlock(&tasks_mutex);
+    Yield();
+  }
 }
 
 void Print_Tasks(int argc, char **argv) {
@@ -66,6 +84,9 @@ void Print_Tasks(int argc, char **argv) {
       case T_WAITING:
         Write_Str("WAITING");
         break;
+      case T_BLOCKED:
+        Write_Str("BLOCKED");
+        break;
       default:
         panic("Undefined task state");
     }
@@ -88,6 +109,8 @@ void Init_Task(task_t *task, uint32_t tid, const char *name,
   task->name = name;
   task->tid = tid;
   task->state = T_READY;
+  task->wait_next = 0;
+  task->wakeup_time = 0;
 }
 
 uint32_t Task_Create(const char *name, void (*entry)(int argc, char **argv)) {
@@ -135,7 +158,7 @@ void Scheduler_Switch(void) {
 
     mutex_lock(&tasks[idx].task_mutex);
     if (tasks[idx].state == T_READY) {
-      if (current_task && current_task->state != T_UNUSED)
+      if (current_task && current_task->state == T_RUNNING)
         current_task->state = T_READY;
       current_task = &tasks[idx];
       current_task->state = T_RUNNING;
@@ -150,6 +173,7 @@ void Scheduler_Switch(void) {
 
 void Scheduler_Start(void) {
   Task_Create("Idle_Task", Idle_Task);
+  Task_Create("Alarm_Task", Alarm_Task);
   Uart_Queue_Init();
   pDisable_IRQ();
   pScheduler_Init();

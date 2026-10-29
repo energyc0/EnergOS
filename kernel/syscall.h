@@ -3,11 +3,21 @@
 
 #include <stdint.h>
 
+/* All the syscalls return 0 on failure */
+
 void Jump_First_Task(void);
+// Return execution to another task.
 void Yield(void);
+// Terminate the current task.
 void Exit(void);
+// Create a new task with the given name and entry point.
+// Returns the task ID of the new task.
 uint32_t Create(const char *name, void (*entry)(int argc, char **argv));
-void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
-                     uint32_t arg2, uint32_t arg3, uint32_t *ret);
+// Pause exection of the current task for a specified number of ticks.
+void Sleep(uint32_t ticks);
+// Pause execution until scheduler won't wake the task up.
+// void Pause();
+// Try to wakeup the task from sleeping state.
+uint32_t Wakeup(uint32_t tid);
 
 #endif

@@ -13,7 +13,7 @@
 static uint8_t tx_queue[UART_QUEUE_SIZE];
 static uint32_t tx_head;
 static uint32_t tx_tail;
-static mutex_t tx_producer_mutex = {.locked = ATOMIC_FLAG_INIT, .task = 0};
+static mutex_t tx_producer_mutex = MUTEX_INIT();
 
 static uint32_t Queue_Next(uint32_t index) {
   return (index + 1u) % UART_QUEUE_SIZE;

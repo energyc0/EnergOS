@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "portable.h"
+#include "port_scheduler.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_conf.h"
 #include "syscall.h"

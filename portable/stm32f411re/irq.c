@@ -3,7 +3,9 @@
 
 #include "cmsis_gcc.h"
 #include "io.h"
-#include "portable.h"
+#include "port_irq.h"
+#include "port_scheduler.h"
+#include "port_syscall.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"

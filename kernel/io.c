@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "portable.h"
+#include "port_uart.h"
 #include "uart_queue.h"
 
 static const uint8_t k_hex[] = "0123456789ABCDEF";

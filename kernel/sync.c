@@ -3,7 +3,7 @@
 #include <stdatomic.h>
 
 #include "kassert.h"
-#include "portable.h"
+#include "port_irq.h"
 #include "syscall.h"
 #include "task.h"
 

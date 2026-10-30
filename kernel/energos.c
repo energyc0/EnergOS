@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #include "io.h"
-#include "portable.h"
+#include "port_time.h"
 #include "shell.h"
 #include "sync.h"
 #include "syscall.h"

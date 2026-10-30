@@ -3,7 +3,8 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "portable.h"
+#include "port_irq.h"
+#include "port_uart.h"
 #include "sync.h"
 #include "syscall.h"
 #include "task.h"

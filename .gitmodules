@@ -1,3 +1,6 @@
 [submodule "third_party/STM32CubeF4"]
 	path = third_party/STM32CubeF4
 	url = git@github.com:STMicroelectronics/STM32CubeF4.git
+[submodule "third_party/LittleFS"]
+	path = third_party/LittleFS
+	url = git@github.com:littlefs-project/littlefs.git

@@ -1,7 +1,6 @@
 #include "slab.h"
 
 #include "kassert.h"
-#include "portable.h"
 #include "sync.h"
 
 int Slab_Init(slab_t* slab, void* memory, uint32_t memory_size,

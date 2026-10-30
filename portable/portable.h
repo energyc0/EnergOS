@@ -9,8 +9,8 @@ void pToggle_LED(void);
 uint32_t pGet_Tick(void);
 
 /* Scheduler */
-uint32_t *pTask_Stack_Init(uint32_t *stack_top,
-                           void (*task_entry)(void *param), void *param);
+uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void *param),
+                           void *param);
 void pScheduler_Init(void);
 void pStart_First_Task(void);
 void pJump_First_Task(void);
@@ -49,5 +49,7 @@ void pDisable_IRQ(void);
 void pEnable_IRQ(void);
 // Return 1 on success configuring the system clock, 0 on failure
 uint32_t pSetup_Timer_IRQ(void);
+
+/* LittleFS */
 
 #endif

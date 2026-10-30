@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "task.h"
+
 /* All the syscalls return 0 on failure */
 
 void Jump_First_Task(void);
@@ -12,7 +14,9 @@ void Yield(void);
 void Exit(void);
 // Create a new task with the given name and entry point.
 // Returns the task ID of the new task.
-uint32_t Create(const char *name, void (*entry)(int argc, char **argv));
+// param is passed unchanged; its storage must remain valid while the task uses
+// it.
+uint32_t Create(const char *name, void (*entry)(void *param), void *param);
 // Pause exection of the current task for a specified number of ticks.
 void Sleep(uint32_t ticks);
 // Pause execution until scheduler won't wake the task up.

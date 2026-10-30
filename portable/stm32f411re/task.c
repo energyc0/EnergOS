@@ -10,8 +10,8 @@
 
 extern void Zombie_Task(void);
 
-uint32_t *pTask_Stack_Init(uint32_t *stack_top,
-                           void (*task_entry)(int argc, char **argv)) {
+uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void *param),
+                           void *param) {
   // Create exception frame
   stack_top -= 8;
   stack_top[7] = 0x1000000;             // xPSR, enable Thumb mode, 24 bit = 1
@@ -20,8 +20,7 @@ uint32_t *pTask_Stack_Init(uint32_t *stack_top,
   stack_top[4] = 0;                     // R12
   stack_top[3] = 0;                     // R3
   stack_top[2] = 0;                     // R2
-  stack_top[1] = 0;                     // R1
-  stack_top[0] = 0;                     // R0
+  stack_top[0] = (uint32_t)param;       // R0
 
   *(--stack_top) = 0xFFFFFFFD;  // EXC_RETURN
   stack_top -= 8;               // Reserve space for R4-R11

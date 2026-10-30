@@ -18,7 +18,7 @@ enum task_state { T_UNUSED, T_READY, T_RUNNING, T_WAITING, T_BLOCKED };
 // so we can cast a task_t* to a uint32_t* and get the stack pointer
 typedef struct task {
   uint32_t *sp;
-  void (*entry)(int argc, char **argv);
+  void (*entry)(void *param);
   uint32_t stack[TASK_STACK_SIZE];
   uint32_t tid;
   const char *name;
@@ -32,7 +32,9 @@ typedef struct task {
 // Creates task and returns its id
 // Valid tid is a value more than 0
 // Return 0 on error
-uint32_t Task_Create(const char *name, void (*entry)(int argc, char **argv));
+// param is passed unchanged; its storage must remain valid while the task uses
+// it.
+uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param);
 
 void Task_Delete(task_t *task);
 

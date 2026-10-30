@@ -10,7 +10,7 @@ uint32_t pGet_Tick(void);
 
 /* Scheduler */
 uint32_t *pTask_Stack_Init(uint32_t *stack_top,
-                           void (*task_entry)(int argc, char **argv));
+                           void (*task_entry)(void *param), void *param);
 void pScheduler_Init(void);
 void pStart_First_Task(void);
 void pJump_First_Task(void);

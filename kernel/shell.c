@@ -13,14 +13,14 @@
 #define SHELL_CR 0x0D
 #define SHELL_LF 0x0A
 
-static void Help(int argc, char** argv);
-static void Echo(int argc, char** argv);
-static void Zombie_Task(int argc, char** argv);
-extern void Print_Tasks(int argc, char** argv);
+static void Help(void* param);
+static void Echo(void* param);
+static void Zombie_Task(void* param);
+extern void Print_Tasks(void* param);
 
 typedef struct {
   const char* name;
-  void (*fn)(int argc, char** argv);
+  void (*fn)(void* param);
   const char* help;
 } ShellCmd;
 
@@ -106,7 +106,7 @@ static void Parse_Prompt(const char* cmd) {
       b++;
     }
     if (*a == '\0' && *b == '\0') {
-      uint32_t tid = Create(g_cmds[i].name, g_cmds[i].fn);
+      uint32_t tid = Create(g_cmds[i].name, g_cmds[i].fn, 0);
       Write_Str("Created task with TID: ");
       Write_Int(tid);
       Write_Char('\n');
@@ -119,9 +119,8 @@ static void Parse_Prompt(const char* cmd) {
   Write_Str("\r\n");
 }
 
-void Shell_Start(int argc, char** argv) {
-  (void)argc;
-  (void)argv;
+void Shell_Start(void* param) {
+  (void)param;
   char line[SHELL_MAX_LINE];
 
   Write_Str("\r\nEnergOS shell. Type 'help' for commands.\r\n");
@@ -133,10 +132,9 @@ void Shell_Start(int argc, char** argv) {
   }
 }
 
-static void Help(int argc, char** argv) {
+static void Help(void* param) {
   uint32_t i;
-  (void)argc;
-  (void)argv;
+  (void)param;
   for (i = 0; i < CMD_COUNT; i++) {
     Write_Str("  ");
     Write_Str(g_cmds[i].name);
@@ -146,16 +144,12 @@ static void Help(int argc, char** argv) {
   }
 }
 
-static void Echo(int argc, char** argv) {
-  int i;
-  for (i = 1; i < argc; i++) {
-    if (i > 1) Write_Char(' ');
-    Write_Str(argv[i]);
-  }
+static void Echo(void* param) {
+  const char* text = param;
+  if (text != 0) Write_Str(text);
   Write_Str("\r\n");
 }
-static void Zombie_Task(int argc, char** argv) {
-  (void)argc;
-  (void)argv;
+static void Zombie_Task(void* param) {
+  (void)param;
   while (1);
 }

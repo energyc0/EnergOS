@@ -21,15 +21,13 @@ uint32_t task_start_id = 1;
 // Need to lock tasks_mutex before using
 task_t *current_task = 0;
 
-static void Idle_Task(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
+static void Idle_Task(void *param) {
+  (void)param;
   while (1);
 }
 
-static void Alarm_Task(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
+static void Alarm_Task(void *param) {
+  (void)param;
   while (1) {
     mutex_lock(&tasks_mutex);
     for (uint32_t i = 0; i < NTASKS; i++) {
@@ -44,54 +42,39 @@ static void Alarm_Task(int argc, char **argv) {
   }
 }
 
-void Print_Tasks(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
-
-  struct task_info {
-    const char *name;
-    uint32_t tid;
-    enum task_state state;
-  } task_info[NTASKS];
-  uint32_t count = 0;
+void Print_Tasks(void *param) {
+  (void)param;
 
   mutex_lock(&tasks_mutex);
   for (int i = 0; i < NTASKS; i++) {
     mutex_lock(&tasks[i].task_mutex);
     if (tasks[i].state != T_UNUSED) {
-      task_info[count].name = tasks[i].name;
-      task_info[count].tid = tasks[i].tid;
-      task_info[count].state = tasks[i].state;
-      count++;
+      Write_Str("Task name: ");
+      Write_Str(tasks[i].name);
+      Write_Str(" ,TID: ");
+      Write_Int(tasks[i].tid);
+      Write_Str(" , state: ");
+      switch (tasks[i].state) {
+        case T_READY:
+          Write_Str("READY");
+          break;
+        case T_RUNNING:
+          Write_Str("RUNNING");
+          break;
+        case T_WAITING:
+          Write_Str("WAITING");
+          break;
+        case T_BLOCKED:
+          Write_Str("BLOCKED");
+          break;
+        default:
+          panic("Undefined task state");
+      }
     }
     mutex_unlock(&tasks[i].task_mutex);
   }
   mutex_unlock(&tasks_mutex);
-
-  for (uint32_t i = 0; i < count; i++) {
-    Write_Str("Task name: ");
-    Write_Str(task_info[i].name);
-    Write_Str(" ,TID: ");
-    Write_Int(task_info[i].tid);
-    Write_Str(" , state: ");
-    switch (task_info[i].state) {
-      case T_READY:
-        Write_Str("READY");
-        break;
-      case T_RUNNING:
-        Write_Str("RUNNING");
-        break;
-      case T_WAITING:
-        Write_Str("WAITING");
-        break;
-      case T_BLOCKED:
-        Write_Str("BLOCKED");
-        break;
-      default:
-        panic("Undefined task state");
-    }
-    Write_Char('\n');
-  }
+  Write_Char('\n');
 }
 
 static task_t *Find_Free_Task(void) {
@@ -102,10 +85,10 @@ static task_t *Find_Free_Task(void) {
 }
 
 void Init_Task(task_t *task, uint32_t tid, const char *name,
-               void (*entry)(int argc, char **argv)) {
+               void (*entry)(void *param), void *param) {
   task->entry = entry;
   task->sp = pTask_Stack_Init(
-      (uint32_t *)((uint8_t *)task->stack + sizeof(task->stack)), entry);
+      (uint32_t *)((uint8_t *)task->stack + sizeof(task->stack)), entry, param);
   task->name = name;
   task->tid = tid;
   task->state = T_READY;
@@ -113,7 +96,8 @@ void Init_Task(task_t *task, uint32_t tid, const char *name,
   task->wakeup_time = 0;
 }
 
-uint32_t Task_Create(const char *name, void (*entry)(int argc, char **argv)) {
+uint32_t Task_Create(const char *name, void (*entry)(void *param),
+                     void *param) {
   if (name == 0 || entry == 0) return 0;
 
   mutex_lock(&tasks_mutex);
@@ -124,7 +108,7 @@ uint32_t Task_Create(const char *name, void (*entry)(int argc, char **argv)) {
   }
 
   mutex_lock(&task->task_mutex);
-  Init_Task(task, task_start_id++, name, entry);
+  Init_Task(task, task_start_id++, name, entry, param);
   task_count++;
   uint32_t ret = task->tid;
   mutex_unlock(&task->task_mutex);
@@ -172,8 +156,8 @@ void Scheduler_Switch(void) {
 }
 
 void Scheduler_Start(void) {
-  Task_Create("Idle_Task", Idle_Task);
-  Task_Create("Alarm_Task", Alarm_Task);
+  Task_Create("Idle_Task", Idle_Task, 0);
+  Task_Create("Alarm_Task", Alarm_Task, 0);
   Uart_Queue_Init();
   pDisable_IRQ();
   pScheduler_Init();

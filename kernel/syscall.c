@@ -13,9 +13,9 @@ extern mutex_t tasks_mutex;
 void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
 void Yield(void) { pSystem_Call(SYSCALL_YIELD); }
 void Exit(void) { pSystem_Call(SYSCALL_EXIT); }
-uint32_t Create(const char *name, void (*entry)(int argc, char **argv)) {
-  return pSystem_Call_Arg2(SYSCALL_CREATE, (uint32_t)(uintptr_t)name,
-                           (uint32_t)(uintptr_t)entry);
+uint32_t Create(const char *name, void (*entry)(void *param), void *param) {
+  return pSystem_Call_Arg3(SYSCALL_CREATE, (uint32_t)name, (uint32_t)entry,
+                           (uint32_t)param);
 }
 void Sleep(uint32_t ticks) { pSystem_Call_Arg1(SYSCALL_SLEEP, ticks); }
 
@@ -24,9 +24,9 @@ static void Syscall_Exit(void) {
   pPend_Task_Switch();
 }
 
-static uint32_t Syscall_Create(const char *name,
-                               void (*entry)(int argc, char **argv)) {
-  return Task_Create(name, entry);
+static uint32_t Syscall_Create(const char *name, void (*entry)(void *param),
+                               void *param) {
+  return Task_Create(name, entry, param);
 }
 
 static uint32_t Syscall_Wakeup(uint32_t tid) {
@@ -72,8 +72,8 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       Syscall_Exit();
       break;
     case SYSCALL_CREATE:
-      *ret = Syscall_Create((const char *)(uintptr_t)arg0,
-                            (void (*)(int argc, char **argv))(uintptr_t)arg1);
+      *ret = Syscall_Create((const char *)arg0, (void (*)(void *))arg1,
+                            (void *)arg2);
       break;
     case SYSCALL_SLEEP:
       Syscall_Sleep(arg0);

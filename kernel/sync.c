@@ -14,30 +14,36 @@ void spinlock_lock(spinlock_t* lck) {
   while (atomic_flag_test_and_set_explicit(&lck->locked, memory_order_acquire));
   lck->owner = current_task;
 }
+
 void spinlock_unlock(spinlock_t* lck) {
   lck->owner = 0;
   atomic_flag_clear_explicit(&lck->locked, memory_order_release);
 }
 
 void mutex_lock(mutex_t* mtx) {
-  while (1) {
-    uint32_t irq_state = pIRQ_Save();
-    if (mutex_try_lock(mtx)) {
-      // mutex_try_lock() assigns task as the owner of the mutex
-      pIRQ_Restore(irq_state);
-      break;
-    } else {
-      task_t* task = Get_Current_Task();
-      task->state = T_BLOCKED;
-      if (mtx->wait_tail) mtx->wait_tail->wait_next = task;
-      mtx->wait_tail = task;
-      task->wait_next = 0;
-      if (!mtx->wait_head) mtx->wait_head = task;
-      pIRQ_Restore(irq_state);
-      Yield();
-    }
+  uint32_t irq_state = pIRQ_Save();
+  task_t* task = Get_Current_Task();
+
+  if (mtx->owner == 0 || mtx->owner == task) {
+    mtx->owner = task;
+    pIRQ_Restore(irq_state);
+    return;
   }
+
+  task->state = T_BLOCKED;
+  task->wait_next = 0;
+
+  if (mtx->wait_tail) {
+    mtx->wait_tail->wait_next = task;
+  } else {
+    mtx->wait_head = task;
+  }
+  mtx->wait_tail = task;
+
+  pIRQ_Restore(irq_state);
+  Yield();
 }
+
 void mutex_unlock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   if (mtx->wait_head) {
@@ -46,22 +52,30 @@ void mutex_unlock(mutex_t* mtx) {
     task->wait_next = 0;
     if (mtx->wait_tail == task) mtx->wait_tail = 0;
     task->state = T_READY;
+    mtx->owner = task;
+  } else {
+    mtx->owner = 0;
   }
-  mtx->owner = 0;
-  atomic_flag_clear_explicit(&mtx->locked, memory_order_release);
   pIRQ_Restore(irq_state);
+}
+
+int mutex_try_lock(mutex_t* mtx) {
+  uint32_t irq_state = pIRQ_Save();
+  // It may be set after mutex_unlock()
+  if (mtx->owner == Get_Current_Task()) return 1;
+  if (mtx->owner == 0) {
+    mtx->owner = current_task;
+    pIRQ_Restore(irq_state);
+    return 1;
+  } else {
+    pIRQ_Restore(irq_state);
+    return 0;
+  }
 }
 
 void semaphore_init(semaphore_t* sem, int32_t limit) {
   atomic_store(&sem->value, limit);
   atomic_store(&sem->limit, limit);
-}
-
-int mutex_try_lock(mutex_t* mtx) {
-  if (atomic_flag_test_and_set_explicit(&mtx->locked, memory_order_acquire))
-    return 0;
-  mtx->owner = current_task;
-  return 1;
 }
 
 void semaphore_wait(semaphore_t* sem) {

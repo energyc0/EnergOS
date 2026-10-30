@@ -11,7 +11,6 @@ void p1(int argc, char** argv) {
   (void)argv;
   while (1) {
     Write_Str("a\n");
-    Sleep(1);
   }
 }
 

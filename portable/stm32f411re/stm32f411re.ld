@@ -1,48 +1,20 @@
-/*
-*****************************************************************************
-**
-**  File        : stm32_flash.ld
-**
-**  Abstract    : Linker script for STM32F411RE Device with
-**                512KByte FLASH, 128KByte RAM
-**
-**                Set heap size, stack size and stack location according
-**                to application requirements.
-**
-**                Set memory bank area and size if external memory is used.
-**
-**  Target      : STMicroelectronics STM32
-**
-**  Environment : Atollic TrueSTUDIO(R)
-**
-**  Distribution: The file is distributed “as is,” without any warranty
-**                of any kind.
-**
-**  (c)Copyright Atollic AB.
-**  You may use this file as-is or modify it according to the needs of your
-**  project. This file may only be built (assembled or compiled and linked)
-**  using the Atollic TrueSTUDIO(R) product. The use of this file together
-**  with other tools than Atollic TrueSTUDIO(R) is not permitted.
-**
-*****************************************************************************
-*/
-
 /* Entry Point */
 ENTRY(Reset_Handler)
-
-/* Highest address of the user mode stack */
-_estack = 0x2001FFFF;    /* end of RAM */
-
-/* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x900; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
 {
-FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
+  FLASH_KERNEL (rx) : ORIGIN = 0x08000000, LENGTH = 256K
+  FLASH_USER (rx) : ORIGIN = 0x08040000, LENGTH = 256K
+
+  RAM_KERNEL (rw) : ORIGIN = 0x20000000, LENGTH = 64K
+  RAM_USER (rw) : ORIGIN = 0x20010000, LENGTH = 64K
+
+  PERIPH (rw)    : ORIGIN = 0x40000000, LENGTH = 1M
 }
+
+/* Highest address of the user mode stack */
+_estack = ORIGIN(RAM_KERNEL) + LENGTH(RAM_KERNEL);    /* end of RAM */
 
 /* Define output sections */
 SECTIONS
@@ -53,14 +25,16 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_KERNEL
 
   /* The program code and other data goes into FLASH */
-  .text :
+  .kernel_text :
   {
     . = ALIGN(4);
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
+    *(.kernel_text)    /* .kernel_text sections (code) */
+    *(.kernel_text*)   /* .kernel_text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
     *(.eh_frame)
@@ -69,8 +43,7 @@ SECTIONS
     KEEP (*(.fini))
 
     . = ALIGN(4);
-    _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+  } >FLASH_KERNEL
 
   /* Constant data goes into FLASH */
   .rodata :
@@ -79,35 +52,35 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_KERNEL
 
   .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASH_KERNEL
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASH_KERNEL
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASH_KERNEL
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASH_KERNEL
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -122,7 +95,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >RAM_KERNEL AT> FLASH_KERNEL
 
   
   /* Uninitialized data section */
@@ -139,10 +112,10 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM
+  } >RAM_KERNEL
 
   /* User_heap_stack section, used to check that there is enough RAM left */
-  ._user_heap_stack :
+  /*._user_heap_stack :
   {
     . = ALIGN(4);
     PROVIDE ( end = . );
@@ -150,9 +123,21 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(4);
-  } >RAM
+  } >RAM */
 
   
+  __kernel_text_start = ORIGIN(FLASH_KERNEL);
+  __kernel_text_end   = ORIGIN(FLASH_KERNEL) + LENGTH(FLASH_KERNEL);
+  __kernel_ram_start  = ORIGIN(RAM_KERNEL);
+  __kernel_ram_end    = ORIGIN(RAM_KERNEL) + LENGTH(RAM_KERNEL);
+
+  __user_text_start   = ORIGIN(FLASH_USER);
+  __user_text_end     = ORIGIN(FLASH_USER) + LENGTH(FLASH_USER);
+  __user_ram_start    = ORIGIN(RAM_USER);
+  __user_ram_end      = ORIGIN(RAM_USER) + LENGTH(RAM_USER);
+
+  __periph_start      = ORIGIN(PERIPH);
+  __periph_end        = ORIGIN(PERIPH) + LENGTH(PERIPH);
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

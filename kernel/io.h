@@ -9,7 +9,8 @@
 
 // Queue a string for UART transmission, returns the number of bytes queued
 uint32_t Write_Str(const char* s);
-// Queue a single character for UART transmission, returns the number of bytes queued
+// Queue a single character for UART transmission, returns the number of bytes
+// queued
 uint32_t Write_Char(char c);
 // Queue an integer for UART transmission, returns the number of bytes queued
 uint32_t Write_Int(int32_t n);

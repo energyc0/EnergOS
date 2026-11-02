@@ -14,10 +14,13 @@
 */
 enum task_state { T_UNUSED, T_READY, T_RUNNING, T_WAITING, T_BLOCKED };
 
+enum task_privilege { T_USER, T_KERNEL };
+
 // The first member of the struct task is the stack pointer,
 // so we can cast a task_t* to a uint32_t* and get the stack pointer
 typedef struct task {
   uint32_t *sp;
+  enum task_privilege privilege;
   void (*entry)(void *param);
   uint32_t stack[TASK_STACK_SIZE];
   uint32_t tid;
@@ -29,12 +32,15 @@ typedef struct task {
                            // synchronization primitives)
 } task_t;
 
+// Kernel-only constructor. Unprivileged callers should use Create(), which
+// always creates a user task.
 // Creates task and returns its id
 // Valid tid is a value more than 0
 // Return 0 on error
 // param is passed unchanged; its storage must remain valid while the task uses
 // it.
-uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param);
+uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param,
+                     enum task_privilege privilege);
 
 void Task_Delete(task_t *task);
 

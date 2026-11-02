@@ -16,6 +16,7 @@ PendSV_Handler:
     str r0, [r1]
 
     bl Scheduler_Switch
+    bl pSet_Current_Task_Privilege
 
     ldr r2, =current_task
     ldr r1, [r2]

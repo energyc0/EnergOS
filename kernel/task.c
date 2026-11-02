@@ -86,20 +86,23 @@ static task_t *Find_Free_Task(void) {
 }
 
 void Init_Task(task_t *task, uint32_t tid, const char *name,
-               void (*entry)(void *param), void *param) {
+               void (*entry)(void *param), void *param,
+               enum task_privilege privilege) {
   task->entry = entry;
   task->sp = pTask_Stack_Init(
       (uint32_t *)((uint8_t *)task->stack + sizeof(task->stack)), entry, param);
   task->name = name;
   task->tid = tid;
   task->state = T_READY;
+  task->privilege = privilege;
   task->wait_next = 0;
   task->wakeup_time = 0;
 }
 
-uint32_t Task_Create(const char *name, void (*entry)(void *param),
-                     void *param) {
-  if (name == 0 || entry == 0) return 0;
+uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param,
+                     enum task_privilege privilege) {
+  if (name == 0 || entry == 0 || (privilege != T_USER && privilege != T_KERNEL))
+    return 0;
 
   mutex_lock(&tasks_mutex);
   task_t *task = Find_Free_Task();
@@ -109,7 +112,7 @@ uint32_t Task_Create(const char *name, void (*entry)(void *param),
   }
 
   mutex_lock(&task->task_mutex);
-  Init_Task(task, task_start_id++, name, entry, param);
+  Init_Task(task, task_start_id++, name, entry, param, privilege);
   task_count++;
   uint32_t ret = task->tid;
   mutex_unlock(&task->task_mutex);
@@ -157,8 +160,8 @@ void Scheduler_Switch(void) {
 }
 
 void Scheduler_Start(void) {
-  Task_Create("Idle_Task", Idle_Task, 0);
-  Task_Create("Alarm_Task", Alarm_Task, 0);
+  Task_Create("Idle_Task", Idle_Task, 0, T_KERNEL);
+  Task_Create("Alarm_Task", Alarm_Task, 0, T_KERNEL);
   Uart_Queue_Init();
   pDisable_IRQ();
   pScheduler_Init();

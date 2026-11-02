@@ -54,7 +54,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH_KERNEL
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH_KERNEL
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)

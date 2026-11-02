@@ -78,7 +78,7 @@ static void Uart_Queue_Task(void *param) {
 }
 
 void Uart_Queue_Init(void) {
-  kassert(Task_Create("UART_Queue", Uart_Queue_Task, 0) != 0);
+  kassert(Task_Create("UART_Queue", Uart_Queue_Task, 0, T_KERNEL) != 0);
 }
 
 uint32_t Uart_Queue_Write(const char *str) {

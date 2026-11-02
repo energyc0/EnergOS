@@ -12,7 +12,7 @@ void Jump_First_Task(void);
 void Yield(void);
 // Terminate the current task.
 void Exit(void);
-// Create a new task with the given name and entry point.
+// Create an unprivileged user task with the given name and entry point.
 // Returns the task ID of the new task.
 // param is passed unchanged; its storage must remain valid while the task uses
 // it.

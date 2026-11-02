@@ -29,7 +29,7 @@ static void Syscall_Exit(void) {
 
 static uint32_t Syscall_Create(const char *name, void (*entry)(void *param),
                                void *param) {
-  return Task_Create(name, entry, param);
+  return Task_Create(name, entry, param, T_USER);
 }
 
 static uint32_t Syscall_Wakeup(uint32_t tid) {
@@ -66,6 +66,7 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
   (void)arg3;
   switch (sysnum) {
     case SYSCALL_JUMP_FIRST_TASK:
+      pSet_Current_Task_Privilege();
       pJump_First_Task();
       break;
     case SYSCALL_YIELD:

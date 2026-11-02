@@ -10,11 +10,11 @@ jobs:
         uses: actions/checkout@v5
         with: 
           submodules: recursive
-      - name: Install clang-format-19
+      - name: Install clang-format-22
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format-22
-          clang-format-19 --version
+          clang-format-22 --version
       - name: Install ARM toolchain
         run: |
           sudo apt-get update
@@ -35,6 +35,6 @@ jobs:
           find . -not -path "./third_party/*" \
             -not -path "./build/*" \
             \( -iname '*.c' -o -iname '*.h' \) \
-            | xargs clang-format --dry-run --Werror --Wno-error=unknown
+            | xargs clang-format-22 --dry-run --Werror --Wno-error=unknown
 
   

@@ -13,7 +13,7 @@ jobs:
       - name: Install clang-format-19
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format-19
+          sudo apt-get install -y clang-format-19.1.7
           clang-format-19 --version
       - name: Install ARM toolchain
         run: |

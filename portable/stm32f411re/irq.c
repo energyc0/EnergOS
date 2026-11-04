@@ -1,11 +1,13 @@
 
 #include <stdint.h>
+#include <utility.h>
 
 #include "cmsis_gcc.h"
 #include "io.h"
 #include "port_irq.h"
 #include "port_scheduler.h"
 #include "port_syscall.h"
+#include "port_uart.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
@@ -66,19 +68,26 @@ void HardFault_Handler(void) {
 }
 
 void HardFault_Handler_C(HardFaultRegs_t *regs) {
-  Write_Str("Hard Fault Detected!\n");
-  Write_Str("PC (Faulting Instruction): ");
-  Write_Hex(regs->pc);
-  Write_Str("\nLR (Link Register): ");
-  Write_Hex(regs->lr);
-  Write_Str("\nCFSR: ");  // Configurable Fault Status Register
-  Write_Hex(SCB->CFSR);
-  Write_Str("\nHFSR: ");  // HardFault Status Register
-  Write_Hex(SCB->HFSR);
-  Write_Str("\nMMFAR: ");  // MemManage Fault Address Register
-  Write_Hex(SCB->MMFAR);
-  Write_Str("\nBFAR: ");
-  Write_Hex(SCB->BFAR);  // BusFault Address Register
+  pUART_SendString((uint8_t *)"Hard Fault Detected!\r\n");
+  pUART_SendString((uint8_t *)"PC (Faulting Instruction): ");
+  pUart_Send_Hex(regs->pc);
+
+  pUART_SendString((uint8_t *)"\r\nLR (Link Register): ");
+  pUart_Send_Hex(regs->lr);
+
+  pUART_SendString(
+      (uint8_t *)"\r\nCFSR: ");  // Configurable Fault Status Register
+  pUart_Send_Hex(SCB->CFSR);
+
+  pUART_SendString((uint8_t *)"\r\nHFSR: ");  // HardFault Status Register
+  pUart_Send_Hex(SCB->HFSR);
+
+  pUART_SendString(
+      (uint8_t *)"\r\nMMFAR: ");  // MemManage Fault Address Register
+  pUart_Send_Hex(SCB->MMFAR);
+
+  pUART_SendString((uint8_t *)"\r\nBFAR: ");
+  pUart_Send_Hex(SCB->BFAR);  // BusFault Address Register
   Write_Char('\n');
 
   while (1);
@@ -138,4 +147,10 @@ uint32_t pSystem_Call_Arg4(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
                  : "r"(r1), "r"(r2), "r"(r3), "r"(r12)
                  : "memory");
   return r0;
+}
+
+void MemFault_Handler(void) {
+  pUART_SendString((uint8_t *)"Memory violation!\n\r");
+  while ((1)) {
+  }
 }

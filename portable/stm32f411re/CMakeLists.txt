@@ -1,6 +1,9 @@
 set(LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/stm32f411re.ld PARENT_SCOPE)
 set(STM_CONFIG_DIR ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
 
+add_library(UTILITY ${CMAKE_SOURCE_DIR}/utility.c)
+target_include_directories(UTILITY PUBLIC ${CMAKE_SOURCE_DIR})
+
 add_library(PORT_LIB
 context_switch.S
 irq.c
@@ -14,6 +17,7 @@ target_include_directories(PORT_LIB PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${PORT_DIR}
 target_include_directories(PORT_LIB PRIVATE ${KERNEL_DIR})
 target_include_directories(HAL PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(PORT_LIB PRIVATE HAL)
+target_link_libraries(PORT_LIB PUBLIC UTILITY)
 
 add_custom_target(debug_server COMMAND
     openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)

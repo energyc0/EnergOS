@@ -1,11 +1,34 @@
 #include <stdint.h>
-#include <string.h>
 
 #include "port_uart.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_def.h"
+#include "utility.h"
 
 UART_HandleTypeDef huart2;
+
+uint32_t pUart_Send(const uint8_t *data, uint32_t length) {
+  if (length == 0) return 0;
+  if (data == NULL) return 0;
+
+  uint32_t sent = 0;
+  while (sent < length) {
+    uint32_t remaining = length - sent;
+    uint16_t chunk_size =
+        remaining > UINT16_MAX ? UINT16_MAX : (uint16_t)remaining;
+    HAL_StatusTypeDef status =
+        HAL_UART_Transmit(&huart2, (uint8_t *)&data[sent], chunk_size,
+                          HAL_MAX_DELAY);
+    if (status == HAL_BUSY) {
+      return sent == 0 ? UINT32_MAX : sent;
+    }
+    if (status != HAL_OK) {
+      return sent;
+    }
+    sent += chunk_size;
+  }
+  return sent;
+}
 
 int pUART_Init(void) {
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -47,7 +70,7 @@ uint32_t pUART_SendByte(uint8_t byte) {
 
 uint32_t pUART_SendString(const uint8_t *str) {
   if (str == NULL) return 0;
-  uint16_t size = strlen((const char *)str);
+  uint16_t size = (uint16_t)Util_Strlen((const char *)str);
   HAL_StatusTypeDef status =
       HAL_UART_Transmit(&huart2, (uint8_t *)str, size, HAL_MAX_DELAY);
   switch (status) {
@@ -71,4 +94,16 @@ uint32_t pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
     default:
       return 0;
   }
+}
+
+uint32_t pUart_Send_Hex(uint32_t value) {
+  char buffer[11];
+  Util_Itohex(value, buffer, sizeof(buffer));
+  return pUART_SendString((const uint8_t *)buffer);
+}
+
+uint32_t pUart_Send_Int(int32_t value) {
+  char buffer[12];
+  Util_Itoa(value, buffer, sizeof(buffer));
+  return pUART_SendString((const uint8_t *)buffer);
 }

@@ -28,8 +28,13 @@ add_subdirectory(${PORT_DIR})
 if(NOT LINKER_SCRIPT)
     message(FATAL_ERROR "The platform did not provide a linker script")
 endif()
+get_filename_component(LINKER_SCRIPT_DIR "${LINKER_SCRIPT}" DIRECTORY)
+
 message(STATUS "Linker script: ${LINKER_SCRIPT}")
-add_link_options("-T${LINKER_SCRIPT}")
+message(STATUS "Linker script directory: ${LINKER_SCRIPT_DIR}")
+add_link_options(
+    -L${LINKER_SCRIPT_DIR}
+    -T${LINKER_SCRIPT})
 
 add_subdirectory(${KERNEL_DIR})
 add_subdirectory(${USER_DIR})

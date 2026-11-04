@@ -23,7 +23,6 @@ extern uint32_t _sbss;
 extern uint32_t _ebss;
 extern uint32_t __periph_start;
 extern uint32_t __periph_end;
-extern uint32_t __periph_start;
 
 static void GPIO_Init(void) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -39,6 +38,16 @@ static void GPIO_Init(void) {
 
 void pToggle_LED(void) { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); }
 
+// Must be a power of two!
+static uint32_t Find_Bit(uint32_t value) {
+  uint32_t power = 0;
+  while (!(value & 1)) {
+    value >>= 1;
+    power++;
+  }
+  return power;
+}
+
 void Init_MPU(void) {
   // Enable MemFault, BusFault, UsageFault
   SCB->SHCSR |= (1 << SCB_SHCSR_MEMFAULTENA_Pos) |
@@ -50,7 +59,8 @@ void Init_MPU(void) {
   // PERIPHERY
   MPU->RNR = 0;
   MPU->RBAR = __periph_start;
-  uint32_t periph_size = __builtin_ctz(__periph_end - __periph_start);
+  uint32_t periph_size =
+      Find_Bit((uint8_t*)&__periph_end - (uint8_t*)&__periph_start);
   // ENABLE=1, SIZE=(periph_size<<1), AP=Priv RW(0x03<<24), XN=1
   MPU->RASR = (1 << 0) | (periph_size << 1) | (0x03 << 24) | (1 << 28);
 

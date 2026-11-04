@@ -13,9 +13,6 @@
 #include "stm32f4xx_hal_gpio.h"
 #include "syscall.h"
 
-extern void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
-                            uint32_t arg2, uint32_t arg3, uint32_t *ret);
-
 typedef struct {
   uint32_t r0;
   uint32_t r1;
@@ -25,7 +22,33 @@ typedef struct {
   uint32_t lr;
   uint32_t pc;
   uint32_t psr;
-} HardFaultRegs_t;
+} Handler_Frame_t;
+
+static void Read_Registers(Handler_Frame_t *regs) {
+  pUART_SendString((uint8_t *)"PC: ");
+  pUart_Send_Hex(regs->pc);
+
+  pUART_SendString((uint8_t *)"\r\nLR: ");
+  pUart_Send_Hex(regs->lr);
+
+  pUART_SendString(
+      (uint8_t *)"\r\nCFSR: ");  // Configurable Fault Status Register
+  pUart_Send_Hex(SCB->CFSR);
+
+  pUART_SendString((uint8_t *)"\r\nHFSR: ");  // HardFault Status Register
+  pUart_Send_Hex(SCB->HFSR);
+
+  pUART_SendString(
+      (uint8_t *)"\r\nMMFAR: ");  // MemManage Fault Address Register
+  pUart_Send_Hex(SCB->MMFAR);
+
+  pUART_SendString((uint8_t *)"\r\nBFAR: ");
+  pUart_Send_Hex(SCB->BFAR);  // BusFault Address Register
+  pUART_SendString((uint8_t *)"\r\n");
+}
+
+extern void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
+                            uint32_t arg2, uint32_t arg3, uint32_t *ret);
 
 void pPend_Task_Switch(void) {
   // Pend PendSV interrupt
@@ -67,28 +90,9 @@ void HardFault_Handler(void) {
       "b HardFault_Handler_C \n");
 }
 
-void HardFault_Handler_C(HardFaultRegs_t *regs) {
+void HardFault_Handler_C(Handler_Frame_t *regs) {
   pUART_SendString((uint8_t *)"Hard Fault Detected!\r\n");
-  pUART_SendString((uint8_t *)"PC (Faulting Instruction): ");
-  pUart_Send_Hex(regs->pc);
-
-  pUART_SendString((uint8_t *)"\r\nLR (Link Register): ");
-  pUart_Send_Hex(regs->lr);
-
-  pUART_SendString(
-      (uint8_t *)"\r\nCFSR: ");  // Configurable Fault Status Register
-  pUart_Send_Hex(SCB->CFSR);
-
-  pUART_SendString((uint8_t *)"\r\nHFSR: ");  // HardFault Status Register
-  pUart_Send_Hex(SCB->HFSR);
-
-  pUART_SendString(
-      (uint8_t *)"\r\nMMFAR: ");  // MemManage Fault Address Register
-  pUart_Send_Hex(SCB->MMFAR);
-
-  pUART_SendString((uint8_t *)"\r\nBFAR: ");
-  pUart_Send_Hex(SCB->BFAR);  // BusFault Address Register
-  Write_Char('\n');
+  Read_Registers(regs);
 
   while (1);
 }
@@ -150,7 +154,37 @@ uint32_t pSystem_Call_Arg4(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
 }
 
 void MemFault_Handler(void) {
+  __asm volatile(
+      "tst lr, #4      \n"
+      "ite eq          \n"
+      "mrseq r0, msp   \n"
+      "mrsne r0, psp   \n"
+      "b MemFault_Handler_C \n");
+}
+
+void MemFault_Handler_C(Handler_Frame_t *regs) {
   pUART_SendString((uint8_t *)"Memory violation!\n\r");
+  Read_Registers(regs);
+
+  uint32_t g_fault_status = SCB->CFSR;    // Configurable Fault Status Register
+  uint32_t g_fault_address = SCB->MMFAR;  // MemManage Fault Address Register
+
+  if (g_fault_status & (1 << 7)) {
+    pUART_SendString((uint8_t *)"Task violated memory at address: ");
+    pUart_Send_Hex(g_fault_address);
+    pUART_SendString((uint8_t *)"\r\n");
+  } else {
+    pUART_SendString(
+        (uint8_t *)"Memory violation, but MMFAR is not valid!\r\n");
+  }
+
+  if (g_fault_status & (1 << 0))
+    pUART_SendString((uint8_t *)"Instruction access violation\r\n");
+  if (g_fault_status & (1 << 1))
+    pUART_SendString((uint8_t *)"Data access violation\r\n");
+  if (g_fault_status & (1 << 3))
+    pUART_SendString((uint8_t *)"Access violation on an EXC_RETURN\r\n");
+
   while ((1)) {
   }
 }

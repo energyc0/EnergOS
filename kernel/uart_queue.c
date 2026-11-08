@@ -4,6 +4,7 @@
 
 #include "kassert.h"
 #include "port_irq.h"
+#include "port_scheduler.h"
 #include "port_uart.h"
 #include "sync.h"
 #include "syscall.h"
@@ -31,7 +32,7 @@ static void Queue_Write_Byte(uint8_t byte) {
       return;
     }
     pIRQ_Restore(irq_state);
-    Yield();
+    pPend_Task_Switch();
   }
 }
 
@@ -65,14 +66,14 @@ static void Uart_Queue_Task(void *param) {
   while (1) {
     uint8_t byte;
     if (!Queue_Peek_Byte(&byte)) {
-      Yield();
+      pPend_Task_Switch();
       continue;
     }
 
     if (pUART_SendByte(byte) == 1) {
       Queue_Consume_Byte();
     } else {
-      Yield();
+      pPend_Task_Switch();
     }
   }
 }
@@ -85,17 +86,17 @@ uint32_t Uart_Queue_Write(const char *str) {
   if (str == 0) return 0;
 
   uint32_t amount = 0;
-  mutex_lock(&tx_producer_mutex);
+  Kernel_Mutex_Lock(&tx_producer_mutex);
   for (uint32_t i = 0; str[i] != '\0'; i++) {
     amount += Queue_Character(str[i]);
   }
-  mutex_unlock(&tx_producer_mutex);
+  Kernel_Mutex_Unlock(&tx_producer_mutex);
   return amount;
 }
 
 uint32_t Uart_Queue_Write_Char(char c) {
-  mutex_lock(&tx_producer_mutex);
+  Kernel_Mutex_Lock(&tx_producer_mutex);
   uint32_t amount = Queue_Character(c);
-  mutex_unlock(&tx_producer_mutex);
+  Kernel_Mutex_Unlock(&tx_producer_mutex);
   return amount;
 }

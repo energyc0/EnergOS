@@ -2,17 +2,16 @@ set(KERNEL_SRC
 ${FIRMWARE_NAME}.c 
 syscall.c
 task.c
-io.c
 uart_queue.c
 sync.c
 slab.c
-shell.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})
 target_include_directories(${FIRMWARE_NAME}.elf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${CMAKE_SOURCE_DIR}/portable)
-target_link_libraries(${FIRMWARE_NAME}.elf PORT_LIB)
+target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${PORT_DIR})
+target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${USER_DIR})
+target_link_libraries(${FIRMWARE_NAME}.elf PORT_LIB USER HAL UTILITY gcc)
 
 add_custom_command(TARGET ${FIRMWARE_NAME}.elf POST_BUILD
 COMMAND ${OBJCOPY} -O binary ${FIRMWARE_NAME}.elf ${FIRMWARE_NAME}.bin)

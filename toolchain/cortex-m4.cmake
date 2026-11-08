@@ -12,6 +12,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
+set(TOOLCHAIN_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(LINKER_SCRIPT ${TOOLCHAIN_DIR}/stm32f411re.ld)
 set(BAUDRATE 115200)
 
 add_link_options(
@@ -20,6 +22,8 @@ add_link_options(
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard
     -Wl,--gc-sections
+    -L${TOOLCHAIN_DIR}
+    -T${LINKER_SCRIPT}
 )
 
 add_compile_options(

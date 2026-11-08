@@ -21,16 +21,15 @@ typedef struct spinlock {
 void spinlock_lock(spinlock_t* lck);
 void spinlock_unlock(spinlock_t* lck);
 
+/* Opaque storage for statically allocated mutexes. */
 typedef struct mutex {
-  task_t* owner;      // Pointer to the task that currently holds the lock
-  task_t* wait_head;  // Pointer to the head of the waiting tasks list
-  task_t* wait_tail;  // Pointer to the tail of the waiting tasks list
+  uintptr_t _opaque[3];
 } mutex_t;
 
-void mutex_lock(mutex_t* mtx);
-void mutex_unlock(mutex_t* mtx);
-// Returns 1 if the mutex was successfully locked, 0 otherwise
-int mutex_try_lock(mutex_t* mtx);
+// Kernel-internal variants; use these instead of nesting a system call.
+void Kernel_Mutex_Lock(mutex_t* mtx);
+void Kernel_Mutex_Unlock(mutex_t* mtx);
+int Kernel_Mutex_Try_Lock(mutex_t* mtx);
 
 typedef struct semaphore {
   atomic_int value;

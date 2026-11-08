@@ -17,5 +17,8 @@ size_t Util_Itoa(int32_t value, char *destination, size_t destination_size);
 // Convert an integer to "0x" followed by eight uppercase hexadecimal digits.
 // Returns the required length, excluding the null terminator.
 // If the destination is too small, the result is truncated and null-terminated.
-size_t Util_Itohex(uint32_t value, char *destination,
-                   size_t destination_size);
+size_t Util_Itohex(uint32_t value, char *destination, size_t destination_size);
+
+void memcpy(void *dest, const void *src, size_t n);
+
+void memset(void *dest, int value, size_t n);

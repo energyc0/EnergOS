@@ -1,9 +1,6 @@
-set(LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/stm32f411re.ld PARENT_SCOPE)
-set(STM_CONFIG_DIR ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
+set(LINKER_SCRIPT ${TOOLCHAIN_DIR}/stm32f411re.ld PARENT_SCOPE)
 
 message(STATUS "Current linker script directory: ${CMAKE_CURRENT_LIST_DIR}")
-add_library(UTILITY ${CMAKE_SOURCE_DIR}/utility.c)
-target_include_directories(UTILITY PUBLIC ${CMAKE_SOURCE_DIR})
 
 add_library(PORT_LIB
 context_switch.S

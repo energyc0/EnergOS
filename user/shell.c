@@ -1,10 +1,8 @@
 #include "shell.h"
 
 #include "io.h"
-#include "kernel_config.h"
 #include "stdint.h"
 #include "syscall.h"
-#include "task.h"
 
 #define SHELL_MAX_LINE 128u
 #define SHELL_MAX_ARGS 16u

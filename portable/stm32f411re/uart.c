@@ -3,7 +3,7 @@
 #include "port_uart.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_def.h"
-#include "utility.h"
+#include "util.h"
 
 UART_HandleTypeDef huart2;
 

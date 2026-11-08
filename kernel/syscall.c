@@ -13,15 +13,6 @@
 
 extern mutex_t tasks_mutex;
 
-void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
-void Yield(void) { pSystem_Call(SYSCALL_YIELD); }
-void Exit(void) { pSystem_Call(SYSCALL_EXIT); }
-uint32_t Create(const char *name, void (*entry)(void *param), void *param) {
-  return pSystem_Call_Arg3(SYSCALL_CREATE, (uint32_t)name, (uint32_t)entry,
-                           (uint32_t)param);
-}
-void Sleep(uint32_t ticks) { pSystem_Call_Arg1(SYSCALL_SLEEP, ticks); }
-
 static void Syscall_Exit(void) {
   Task_Delete(Get_Current_Task());
   pPend_Task_Switch();
@@ -34,20 +25,20 @@ static uint32_t Syscall_Create(const char *name, void (*entry)(void *param),
 
 static uint32_t Syscall_Wakeup(uint32_t tid) {
   if (tid == 0) return 0;
-  mutex_lock(&tasks_mutex);
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Lock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
   return tid;
 }
 
 static void Syscall_Sleep(uint32_t ticks) {
   if (ticks == 0) return;
   task_t *task = Get_Current_Task();
-  mutex_lock(&tasks_mutex);
-  mutex_lock(&task->task_mutex);
+  Kernel_Mutex_Lock(&tasks_mutex);
+  Kernel_Mutex_Lock(&task->task_mutex);
   task->state = T_WAITING;
   task->wakeup_time = pGet_Tick() + ticks;
-  mutex_unlock(&task->task_mutex);
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&task->task_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
   pPend_Task_Switch();
 }
 /*
@@ -84,6 +75,15 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       break;
     case SYSCALL_WAKEUP:
       *ret = Syscall_Wakeup(arg0);
+      break;
+    case SYSCALL_MUTEX_LOCK:
+      Kernel_Mutex_Lock((mutex_t *)arg0);
+      break;
+    case SYSCALL_MUTEX_UNLOCK:
+      Kernel_Mutex_Unlock((mutex_t *)arg0);
+      break;
+    case SYSCALL_MUTEX_TRY_LOCK:
+      *ret = (uint32_t)Kernel_Mutex_Try_Lock((mutex_t *)arg0);
       break;
     default:
       panic("Undefined syscall number");

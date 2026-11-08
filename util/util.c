@@ -1,4 +1,4 @@
-#include "utility.h"
+#include "util.h"
 
 size_t Util_Strlen(const char *str) {
   const char *end = str;
@@ -81,8 +81,7 @@ size_t Util_Itoa(int32_t value, char *destination, size_t destination_size) {
   return result_length;
 }
 
-size_t Util_Itohex(uint32_t value, char *destination,
-                   size_t destination_size) {
+size_t Util_Itohex(uint32_t value, char *destination, size_t destination_size) {
   static const char digits[] = "0123456789ABCDEF";
   const size_t result_length = 10;
 
@@ -107,4 +106,12 @@ size_t Util_Itohex(uint32_t value, char *destination,
     destination[output_index] = '\0';
   }
   return result_length;
+}
+
+void memcpy(void *dest, const void *src, size_t n) {
+  for (size_t i = 0; i < n; i++) ((char *)dest)[i] = ((char *)src)[i];
+}
+
+void memset(void *dest, int value, size_t n) {
+  for (size_t i = 0; i < n; i++) ((char *)dest)[i] = value;
 }

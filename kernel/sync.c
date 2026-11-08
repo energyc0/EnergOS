@@ -4,11 +4,35 @@
 
 #include "kassert.h"
 #include "port_irq.h"
+#include "port_scheduler.h"
 #include "syscall.h"
 #include "task.h"
 
+typedef struct mutex_impl {
+  task_t* owner;      // Pointer to the task that currently holds the lock
+  task_t* wait_head;  // Pointer to the head of the waiting tasks list
+  task_t* wait_tail;  // Pointer to the tail of the waiting tasks list
+} mutex_impl_t;
+
 extern task_t* current_task;
 extern mutex_t tasks_mutex;
+
+_Static_assert(sizeof(mutex_impl_t) <= sizeof(mutex_t),
+               "mutex storage is too small for its implementation");
+_Static_assert(_Alignof(mutex_t) >= _Alignof(mutex_impl_t),
+               "mutex storage is not aligned for its implementation");
+
+static void Mutex_Load(const mutex_t* mtx, mutex_impl_t* impl) {
+  const uint8_t* src = (const uint8_t*)mtx;
+  uint8_t* dst = (uint8_t*)impl;
+  for (uint32_t i = 0; i < sizeof(*impl); i++) dst[i] = src[i];
+}
+
+static void Mutex_Store(mutex_t* mtx, const mutex_impl_t* impl) {
+  uint8_t* dst = (uint8_t*)mtx;
+  const uint8_t* src = (const uint8_t*)impl;
+  for (uint32_t i = 0; i < sizeof(*impl); i++) dst[i] = src[i];
+}
 
 void spinlock_lock(spinlock_t* lck) {
   while (atomic_flag_test_and_set_explicit(&lck->locked, memory_order_acquire));
@@ -20,12 +44,15 @@ void spinlock_unlock(spinlock_t* lck) {
   atomic_flag_clear_explicit(&lck->locked, memory_order_release);
 }
 
-void mutex_lock(mutex_t* mtx) {
+void Kernel_Mutex_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   task_t* task = Get_Current_Task();
+  mutex_impl_t impl;
+  Mutex_Load(mtx, &impl);
 
-  if (mtx->owner == 0 || mtx->owner == task) {
-    mtx->owner = task;
+  if (impl.owner == 0 || impl.owner == task) {
+    impl.owner = task;
+    Mutex_Store(mtx, &impl);
     pIRQ_Restore(irq_state);
     return;
   }
@@ -33,38 +60,48 @@ void mutex_lock(mutex_t* mtx) {
   task->state = T_BLOCKED;
   task->wait_next = 0;
 
-  if (mtx->wait_tail) {
-    mtx->wait_tail->wait_next = task;
+  if (impl.wait_tail) {
+    impl.wait_tail->wait_next = task;
   } else {
-    mtx->wait_head = task;
+    impl.wait_head = task;
   }
-  mtx->wait_tail = task;
+  impl.wait_tail = task;
+  Mutex_Store(mtx, &impl);
 
   pIRQ_Restore(irq_state);
-  Yield();
+  pPend_Task_Switch();
 }
 
-void mutex_unlock(mutex_t* mtx) {
+void Kernel_Mutex_Unlock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
-  if (mtx->wait_head) {
-    task_t* task = mtx->wait_head;
-    mtx->wait_head = task->wait_next;
+  mutex_impl_t impl;
+  Mutex_Load(mtx, &impl);
+  if (impl.wait_head) {
+    task_t* task = impl.wait_head;
+    impl.wait_head = task->wait_next;
     task->wait_next = 0;
-    if (mtx->wait_tail == task) mtx->wait_tail = 0;
+    if (impl.wait_tail == task) impl.wait_tail = 0;
     task->state = T_READY;
-    mtx->owner = task;
+    impl.owner = task;
   } else {
-    mtx->owner = 0;
+    impl.owner = 0;
   }
+  Mutex_Store(mtx, &impl);
   pIRQ_Restore(irq_state);
 }
 
-int mutex_try_lock(mutex_t* mtx) {
+int Kernel_Mutex_Try_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   // It may be set after mutex_unlock()
-  if (mtx->owner == Get_Current_Task()) return 1;
-  if (mtx->owner == 0) {
-    mtx->owner = current_task;
+  mutex_impl_t impl;
+  Mutex_Load(mtx, &impl);
+  if (impl.owner == Get_Current_Task()) {
+    pIRQ_Restore(irq_state);
+    return 1;
+  }
+  if (impl.owner == 0) {
+    impl.owner = current_task;
+    Mutex_Store(mtx, &impl);
     pIRQ_Restore(irq_state);
     return 1;
   } else {

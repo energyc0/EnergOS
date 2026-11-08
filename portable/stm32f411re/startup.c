@@ -5,6 +5,7 @@
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
+#include "util/util.h"
 
 extern int main(void);
 extern void PendSV_Handler(void);
@@ -16,11 +17,16 @@ extern void HardFault_Handler(void);
 extern void MemFault_Handler(void);
 
 extern char _estack;
-extern uint32_t _sidata;
-extern uint32_t _sdata;
-extern uint32_t _edata;
-extern uint32_t _sbss;
-extern uint32_t _ebss;
+extern uint32_t _sikerneldata;
+extern uint32_t _siuserdata;
+extern uint32_t _kernel_sdata;
+extern uint32_t _kernel_edata;
+extern uint32_t _user_sdata;
+extern uint32_t _user_edata;
+extern uint32_t __kernel_bss_start__;
+extern uint32_t __kernel_bss_end__;
+extern uint32_t __user_bss_start__;
+extern uint32_t __user_bss_end__;
 extern uint32_t __periph_start;
 extern uint32_t __periph_end;
 
@@ -71,15 +77,13 @@ void Init_MPU(void) {
 }
 
 void Reset_Handler() {
-  uint32_t* source = &_sidata;
-  uint32_t* destination;
-
-  for (destination = &_sdata; destination < &_edata;) {
-    *destination++ = *source++;
-  }
-  for (destination = &_sbss; destination < &_ebss;) {
-    *destination++ = 0;
-  }
+  memcpy(&_kernel_sdata, &_sikerneldata,
+         (char*)&_kernel_edata - (char*)&_kernel_edata);
+  memcpy(&_user_sdata, &_siuserdata, (char*)&_user_edata - (char*)&_user_edata);
+  memset(&__kernel_bss_start__, 0,
+         (char*)&__kernel_bss_end__ - (char*)&__kernel_bss_start__);
+  memset(&__user_bss_start__, 0,
+         (char*)&__user_bss_end__ - (char*)&__user_bss_start__);
 
   kassert(HAL_Init() == HAL_OK);
   GPIO_Init();

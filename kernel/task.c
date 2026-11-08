@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 
-#include "io.h"
 #include "kassert.h"
 #include "kernel_config.h"
 #include "port_scheduler.h"
@@ -10,6 +9,7 @@
 #include "sync.h"
 #include "syscall.h"
 #include "uart_queue.h"
+#include "user/io.h"
 
 // Mutex to access tasks[], task_count, current_task and task_start_id
 mutex_t tasks_mutex = MUTEX_INIT();
@@ -30,15 +30,15 @@ static void Idle_Task(void *param) {
 static void Alarm_Task(void *param) {
   (void)param;
   while (1) {
-    mutex_lock(&tasks_mutex);
+    Kernel_Mutex_Lock(&tasks_mutex);
     for (uint32_t i = 0; i < NTASKS; i++) {
-      mutex_lock(&tasks[i].task_mutex);
+      Kernel_Mutex_Lock(&tasks[i].task_mutex);
       if (tasks[i].state == T_WAITING && tasks[i].wakeup_time < pGet_Tick()) {
         tasks[i].state = T_READY;
       }
-      mutex_unlock(&tasks[i].task_mutex);
+      Kernel_Mutex_Unlock(&tasks[i].task_mutex);
     }
-    mutex_unlock(&tasks_mutex);
+    Kernel_Mutex_Unlock(&tasks_mutex);
     Yield();
   }
 }
@@ -46,9 +46,9 @@ static void Alarm_Task(void *param) {
 void Print_Tasks(void *param) {
   (void)param;
 
-  mutex_lock(&tasks_mutex);
+  Kernel_Mutex_Lock(&tasks_mutex);
   for (int i = 0; i < NTASKS; i++) {
-    mutex_lock(&tasks[i].task_mutex);
+    Kernel_Mutex_Lock(&tasks[i].task_mutex);
     if (tasks[i].state != T_UNUSED) {
       Write_Str("Task name: ");
       Write_Str(tasks[i].name);
@@ -72,9 +72,9 @@ void Print_Tasks(void *param) {
           panic("Undefined task state");
       }
     }
-    mutex_unlock(&tasks[i].task_mutex);
+    Kernel_Mutex_Unlock(&tasks[i].task_mutex);
   }
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
   Write_Char('\n');
 }
 
@@ -104,38 +104,38 @@ uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param,
   if (name == 0 || entry == 0 || (privilege != T_USER && privilege != T_KERNEL))
     return 0;
 
-  mutex_lock(&tasks_mutex);
+  Kernel_Mutex_Lock(&tasks_mutex);
   task_t *task = Find_Free_Task();
   if (task == 0) {
-    mutex_unlock(&tasks_mutex);
+    Kernel_Mutex_Unlock(&tasks_mutex);
     return 0;
   }
 
-  mutex_lock(&task->task_mutex);
+  Kernel_Mutex_Lock(&task->task_mutex);
   Init_Task(task, task_start_id++, name, entry, param, privilege);
   task_count++;
   uint32_t ret = task->tid;
-  mutex_unlock(&task->task_mutex);
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&task->task_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
   return ret;
 }
 
 void Task_Delete(task_t *task) {
-  mutex_lock(&tasks_mutex);
+  Kernel_Mutex_Lock(&tasks_mutex);
   if (task) {
-    mutex_lock(&task->task_mutex);
+    Kernel_Mutex_Lock(&task->task_mutex);
     task->state = T_UNUSED;
     task_count--;
-    mutex_unlock(&task->task_mutex);
+    Kernel_Mutex_Unlock(&task->task_mutex);
   }
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
 }
 
 void Scheduler_Switch(void) {
   // PendSV cannot wait on a mutex held by the task it just preempted.
-  if (!mutex_try_lock(&tasks_mutex)) return;
+  if (!Kernel_Mutex_Try_Lock(&tasks_mutex)) return;
   if (task_count == 0) {
-    mutex_unlock(&tasks_mutex);
+    Kernel_Mutex_Unlock(&tasks_mutex);
     return;
   }
 
@@ -144,19 +144,19 @@ void Scheduler_Switch(void) {
     uint32_t idx = (start + i) % NTASKS;
     if (tasks[idx].state == T_UNUSED) continue;
 
-    mutex_lock(&tasks[idx].task_mutex);
+    Kernel_Mutex_Lock(&tasks[idx].task_mutex);
     if (tasks[idx].state == T_READY) {
       if (current_task && current_task->state == T_RUNNING)
         current_task->state = T_READY;
       current_task = &tasks[idx];
       current_task->state = T_RUNNING;
-      mutex_unlock(&tasks[idx].task_mutex);
-      mutex_unlock(&tasks_mutex);
+      Kernel_Mutex_Unlock(&tasks[idx].task_mutex);
+      Kernel_Mutex_Unlock(&tasks_mutex);
       return;
     }
-    mutex_unlock(&tasks[idx].task_mutex);
+    Kernel_Mutex_Unlock(&tasks[idx].task_mutex);
   }
-  mutex_unlock(&tasks_mutex);
+  Kernel_Mutex_Unlock(&tasks_mutex);
 }
 
 void Scheduler_Start(void) {

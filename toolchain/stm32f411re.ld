@@ -52,6 +52,7 @@ SECTIONS
   .user_text :
     {
     . = ALIGN(4);
+    *(.user_text .user_text*)
     *libUSER.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
     . = ALIGN(4);
   } >FLASH_USER
@@ -130,6 +131,7 @@ SECTIONS
     . = ALIGN(4);
     _user_sdata = .;        /* create a global symbol at data start */
 
+    *(.user_data user_data*)
     *libUSER.a:*(.data .data.*)
 
     . = ALIGN(4);
@@ -188,6 +190,9 @@ SECTIONS
 
   __periph_start      = ORIGIN(PERIPH);
   __periph_end        = ORIGIN(PERIPH) + LENGTH(PERIPH);
+
+  __priv_periph_start      = ORIGIN(PRIV_PERIPH);
+  __priv_periph_end        = ORIGIN(PRIV_PERIPH) + LENGTH(PRIV_PERIPH);
 
   .debug 0 :
   {

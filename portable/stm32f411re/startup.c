@@ -15,18 +15,34 @@ extern void HardFault_Handler(void);
 extern void MemFault_Handler(void);
 
 extern char _estack;
+
 extern uint32_t _sikerneldata;
 extern uint32_t _siuserdata;
+
 extern uint32_t _kernel_sdata;
 extern uint32_t _kernel_edata;
 extern uint32_t _user_sdata;
 extern uint32_t _user_edata;
+
 extern uint32_t __kernel_bss_start__;
 extern uint32_t __kernel_bss_end__;
 extern uint32_t __user_bss_start__;
 extern uint32_t __user_bss_end__;
+
+extern uint32_t __kernel_text_start;
+extern uint32_t __kernel_text_end;
+extern uint32_t __kernel_ram_start;
+extern uint32_t __kernel_ram_end;
+
+extern uint32_t __user_text_start;
+extern uint32_t __user_text_end;
+extern uint32_t __user_ram_start;
+extern uint32_t __user_ram_end;
+
 extern uint32_t __periph_start;
 extern uint32_t __periph_end;
+extern uint32_t __priv_periph_start;
+extern uint32_t __priv_periph_end;
 
 static void GPIO_Init(void) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -42,36 +58,52 @@ static void GPIO_Init(void) {
 
 void pToggle_LED(void) { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); }
 
-// Must be a power of two!
-static uint32_t Find_Bit(uint32_t value) {
-  uint32_t power = 0;
-  while (!(value & 1)) {
-    value >>= 1;
-    power++;
-  }
-  return power;
+static void Configure_MPU_Region(uint8_t number, uint32_t base_address,
+                                 uint8_t size, uint8_t access_permission,
+                                 uint8_t disable_exec) {
+  MPU_Region_InitTypeDef region = {0};
+
+  region.Enable = MPU_REGION_ENABLE;
+  region.Number = number;
+  region.BaseAddress = base_address;
+  region.Size = size;
+  region.SubRegionDisable = 0;
+  region.TypeExtField = MPU_TEX_LEVEL0;
+  region.AccessPermission = access_permission;
+  region.DisableExec = disable_exec;
+  region.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+  region.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  region.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&region);
 }
 
 void Init_MPU(void) {
-  // Enable MemFault, BusFault, UsageFault
-  SCB->SHCSR |= (1 << SCB_SHCSR_MEMFAULTENA_Pos) |
-                (1 << SCB_SHCSR_BUSFAULTENA_Pos) |
-                (1 << SCB_SHCSR_USGFAULTENA_Pos);
+  SCB->SHCSR |=
+      (1 << SCB_SHCSR_BUSFAULTENA_Pos) | (1 << SCB_SHCSR_USGFAULTENA_Pos);
 
-  MPU->CTRL = 0;
+  HAL_MPU_Disable();
 
-  // PERIPHERY
-  MPU->RNR = 0;
-  MPU->RBAR = __periph_start;
-  uint32_t periph_size =
-      Find_Bit((uint8_t*)&__periph_end - (uint8_t*)&__periph_start);
-  // ENABLE=1, SIZE=(periph_size<<1), AP=Priv RW(0x03<<24), XN=1
-  MPU->RASR = (1 << 0) | (periph_size << 1) | (0x03 << 24) | (1 << 28);
+  Configure_MPU_Region(MPU_REGION_NUMBER0, (uint32_t)&__kernel_text_start,
+                       MPU_REGION_SIZE_256KB, MPU_REGION_PRIV_RO,
+                       MPU_INSTRUCTION_ACCESS_ENABLE);
+  Configure_MPU_Region(MPU_REGION_NUMBER1, (uint32_t)&__user_text_start,
+                       MPU_REGION_SIZE_256KB, MPU_REGION_PRIV_RO_URO,
+                       MPU_INSTRUCTION_ACCESS_ENABLE);
+  Configure_MPU_Region(MPU_REGION_NUMBER2, (uint32_t)&__kernel_ram_start,
+                       MPU_REGION_SIZE_64KB, MPU_REGION_PRIV_RW,
+                       MPU_INSTRUCTION_ACCESS_DISABLE);
+  Configure_MPU_Region(MPU_REGION_NUMBER3, (uint32_t)&__user_ram_start,
+                       MPU_REGION_SIZE_64KB, MPU_REGION_FULL_ACCESS,
+                       MPU_INSTRUCTION_ACCESS_DISABLE);
+  Configure_MPU_Region(MPU_REGION_NUMBER4, (uint32_t)&__periph_start,
+                       MPU_REGION_SIZE_1MB, MPU_REGION_PRIV_RW,
+                       MPU_INSTRUCTION_ACCESS_DISABLE);
+  Configure_MPU_Region(MPU_REGION_NUMBER5, (uint32_t)&__priv_periph_start,
+                       MPU_REGION_SIZE_1MB, MPU_REGION_PRIV_RW,
+                       MPU_INSTRUCTION_ACCESS_DISABLE);
 
-  MPU->CTRL = (1 << 0) | (1 << 2);  // ENABLE=1, PRIVDEFENA=1
-
-  __DSB();
-  __ISB();
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
 
 void Reset_Handler() {

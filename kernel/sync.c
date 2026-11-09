@@ -14,6 +14,16 @@ typedef struct mutex_impl {
   task_t* wait_tail;  // Pointer to the tail of the waiting tasks list
 } mutex_impl_t;
 
+typedef struct spinlock_impl {
+  atomic_flag locked;
+  task_t* owner;
+} spinlock_impl_t;
+
+typedef struct semaphore_impl {
+  atomic_int value;
+  atomic_int limit;
+} semaphore_impl_t;
+
 extern task_t* current_task;
 extern mutex_t tasks_mutex;
 
@@ -21,6 +31,14 @@ _Static_assert(sizeof(mutex_impl_t) <= sizeof(mutex_t),
                "mutex storage is too small for its implementation");
 _Static_assert(_Alignof(mutex_t) >= _Alignof(mutex_impl_t),
                "mutex storage is not aligned for its implementation");
+_Static_assert(sizeof(spinlock_impl_t) <= sizeof(spinlock_t),
+               "spinlock storage is too small for its implementation");
+_Static_assert(_Alignof(spinlock_t) >= _Alignof(spinlock_impl_t),
+               "spinlock storage is not aligned for its implementation");
+_Static_assert(sizeof(semaphore_impl_t) <= sizeof(semaphore_t),
+               "semaphore storage is too small for its implementation");
+_Static_assert(_Alignof(semaphore_t) >= _Alignof(semaphore_impl_t),
+               "semaphore storage is not aligned for its implementation");
 
 static void Mutex_Load(const mutex_t* mtx, mutex_impl_t* impl) {
   const uint8_t* src = (const uint8_t*)mtx;
@@ -35,13 +53,15 @@ static void Mutex_Store(mutex_t* mtx, const mutex_impl_t* impl) {
 }
 
 void spinlock_lock(spinlock_t* lck) {
-  while (atomic_flag_test_and_set_explicit(&lck->locked, memory_order_acquire));
-  lck->owner = current_task;
+  spinlock_impl_t* impl = (spinlock_impl_t*)lck;
+  while (atomic_flag_test_and_set_explicit(&impl->locked, memory_order_acquire));
+  impl->owner = current_task;
 }
 
 void spinlock_unlock(spinlock_t* lck) {
-  lck->owner = 0;
-  atomic_flag_clear_explicit(&lck->locked, memory_order_release);
+  spinlock_impl_t* impl = (spinlock_impl_t*)lck;
+  impl->owner = 0;
+  atomic_flag_clear_explicit(&impl->locked, memory_order_release);
 }
 
 void Kernel_Mutex_Lock(mutex_t* mtx) {
@@ -111,16 +131,18 @@ int Kernel_Mutex_Try_Lock(mutex_t* mtx) {
 }
 
 void semaphore_init(semaphore_t* sem, int32_t limit) {
-  atomic_store(&sem->value, limit);
-  atomic_store(&sem->limit, limit);
+  semaphore_impl_t* impl = (semaphore_impl_t*)sem;
+  atomic_store(&impl->value, limit);
+  atomic_store(&impl->limit, limit);
 }
 
 void semaphore_wait(semaphore_t* sem) {
+  semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   while (1) {
     uint32_t irq_state = pIRQ_Save();
-    int32_t value = atomic_load(&sem->value);
+    int32_t value = atomic_load(&impl->value);
     if (value > 0) {
-      atomic_fetch_sub(&sem->value, 1);
+      atomic_fetch_sub(&impl->value, 1);
       pIRQ_Restore(irq_state);
       return;
     }
@@ -130,11 +152,12 @@ void semaphore_wait(semaphore_t* sem) {
   }
 }
 void semaphore_signal(semaphore_t* sem) {
+  semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   uint32_t irq_state = pIRQ_Save();
-  int32_t value = atomic_load(&sem->value);
-  int32_t limit = atomic_load(&sem->limit);
+  int32_t value = atomic_load(&impl->value);
+  int32_t limit = atomic_load(&impl->limit);
   if (value < limit) {
-    atomic_store(&sem->value, value + 1);
+    atomic_store(&impl->value, value + 1);
   }
   pIRQ_Restore(irq_state);
 }

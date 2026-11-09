@@ -10,11 +10,10 @@ void printer(void* msg) {
   if (msg) {
     while (1) {
       mutex_lock(&printer_mutex);
-      uint32_t tick = pGet_Tick();
-      Write_Str("Ticks: ");
-      Write_Int(tick);
+      // uint32_t tick = pGet_Tick();
+      Write_Str("Fuck niggers! ");
+      Write_Str((const char*)msg);
       Write_Char('\n');
-      Write_Str(msg);
       mutex_unlock(&printer_mutex);
     }
   }

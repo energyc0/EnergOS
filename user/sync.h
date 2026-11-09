@@ -3,10 +3,7 @@
 
 #include <stdint.h>
 
-/* Opaque storage for statically allocated mutexes. */
-typedef struct mutex {
-  uintptr_t _opaque[3];
-} mutex_t;
+#include "kernel/typedefs.h"
 
 #define MUTEX_INIT() {0}
 

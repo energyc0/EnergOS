@@ -3,63 +3,64 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "portable/irq.h"
 #include "portable/scheduler.h"
 #include "portable/uart.h"
 #include "sync.h"
-#include "syscall.h"
 #include "task.h"
+#include "user/sync.h"
+#include "user/syscall.h"
 
 #define UART_QUEUE_SIZE 256u
 
-static uint8_t tx_queue[UART_QUEUE_SIZE];
-static uint32_t tx_head;
-static uint32_t tx_tail;
-static mutex_t tx_producer_mutex = MUTEX_INIT();
+__attribute__((section(".user_data"))) static uint8_t tx_queue[UART_QUEUE_SIZE];
+__attribute__((section(".user_data"))) static uint32_t tx_head;
+__attribute__((section(".user_data"))) static uint32_t tx_tail;
+__attribute__((section(".user_data"))) static mutex_t tx_producer_mutex =
+    MUTEX_INIT();
 
-static uint32_t Queue_Next(uint32_t index) {
+__attribute__((section(".user_text"))) static uint32_t Queue_Next(
+    uint32_t index) {
   return (index + 1u) % UART_QUEUE_SIZE;
 }
 
-static void Queue_Write_Byte(uint8_t byte) {
+__attribute__((section(".user_text"))) static void Queue_Write_Byte(
+    uint8_t byte) {
   while (1) {
-    uint32_t irq_state = pIRQ_Save();
     uint32_t next_tail = Queue_Next(tx_tail);
     if (next_tail != tx_head) {
       tx_queue[tx_tail] = byte;
       tx_tail = next_tail;
-      pIRQ_Restore(irq_state);
       return;
     }
-    pIRQ_Restore(irq_state);
-    pPend_Task_Switch();
+    Yield();
   }
 }
 
 static int Queue_Peek_Byte(uint8_t *byte) {
-  uint32_t irq_state = pIRQ_Save();
+  Kernel_Mutex_Lock(&tx_producer_mutex);
   if (tx_head == tx_tail) {
-    pIRQ_Restore(irq_state);
+    Kernel_Mutex_Unlock(&tx_producer_mutex);
     return 0;
   }
   *byte = tx_queue[tx_head];
-  pIRQ_Restore(irq_state);
+  Kernel_Mutex_Unlock(&tx_producer_mutex);
   return 1;
 }
 
 static void Queue_Consume_Byte(void) {
-  uint32_t irq_state = pIRQ_Save();
+  Kernel_Mutex_Lock(&tx_producer_mutex);
   tx_head = Queue_Next(tx_head);
-  pIRQ_Restore(irq_state);
+  Kernel_Mutex_Unlock(&tx_producer_mutex);
 }
 
-static uint32_t Queue_Character(char c) {
+__attribute__((section(".user_text"))) static uint32_t Queue_Character(char c) {
   if (c == '\r') return 0;
   if (c == '\n') Queue_Write_Byte('\r');
   Queue_Write_Byte((uint8_t)c);
   return c == '\n' ? 2u : 1u;
 }
 
+// Priviliged task
 static void Uart_Queue_Task(void *param) {
   (void)param;
 
@@ -82,21 +83,22 @@ void Uart_Queue_Init(void) {
   kassert(Task_Create("UART_Queue", Uart_Queue_Task, 0, T_KERNEL) != 0);
 }
 
-uint32_t Uart_Queue_Write(const char *str) {
+__attribute__((section(".user_text"))) uint32_t
+Uart_Queue_Write(const char *str) {
   if (str == 0) return 0;
 
   uint32_t amount = 0;
-  Kernel_Mutex_Lock(&tx_producer_mutex);
+  mutex_lock(&tx_producer_mutex);
   for (uint32_t i = 0; str[i] != '\0'; i++) {
     amount += Queue_Character(str[i]);
   }
-  Kernel_Mutex_Unlock(&tx_producer_mutex);
+  mutex_unlock(&tx_producer_mutex);
   return amount;
 }
 
-uint32_t Uart_Queue_Write_Char(char c) {
-  Kernel_Mutex_Lock(&tx_producer_mutex);
+__attribute__((section(".user_text"))) uint32_t Uart_Queue_Write_Char(char c) {
+  mutex_lock(&tx_producer_mutex);
   uint32_t amount = Queue_Character(c);
-  Kernel_Mutex_Unlock(&tx_producer_mutex);
+  mutex_unlock(&tx_producer_mutex);
   return amount;
 }

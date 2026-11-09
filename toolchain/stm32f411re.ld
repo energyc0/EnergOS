@@ -34,10 +34,13 @@ SECTIONS
   .kernel_text :
   {
     . = ALIGN(4);
-    /* .text sections (code) */
-    kernel/*.o(.text .text* .glue_7 .glue_7t .eh_frame)
-    portable/*.o(.text .text* .glue_7 .glue_7t .eh_frame)
-    third_party/*.o(.text .text* .glue_7 .glue_7t .eh_frame)
+
+    *CMakeFiles/energos.elf.dir/*.obj(.text .text.* .glue_7 .glue_7t .eh_frame)
+    *libPORT_LIB.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
+    *libHAL.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
+    *libUTILITY.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
+    *libgcc.a:*(.text .text.* .glue_7 .glue_7t)
+    *(.glue_7 .glue_7t .vfp11_veneer .v4_bx .iplt)
 
     KEEP (*(.init))
     KEEP (*(.fini))
@@ -49,31 +52,29 @@ SECTIONS
   .user_text :
     {
     . = ALIGN(4);
-    /* .text sections (code) */
-    user/*.o(.text .text* .glue_7 .glue_7t .eh_frame)
-    util/*.o(.text .text* .glue_7 .glue_7t .eh_frame)
-
+    *libUSER.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
     . = ALIGN(4);
   } >FLASH_USER
 
   /* Constant kernel data goes into FLASH_KERNEL */
+  /* .rodata sections (constants, strings, etc.) */
   .kernel_rodata :
   {
     . = ALIGN(4);
-    kernel/*.o(.rodata .rodata*)         /* .rodata sections (constants, strings, etc.) */
-    portable/*.o(.rodata .rodata*)         /* .rodata sections (constants, strings, etc.) */
-    third_party/*.o(.rodata .rodata*)         /* .rodata sections (constants, strings, etc.) */
-
+    *CMakeFiles/energos.elf.dir/*.obj(.rodata .rodata.*)
+    *libPORT_LIB.a:*(.rodata .rodata.*)
+    *libHAL.a:*(.rodata .rodata.*)
+    *libUTILITY.a:*(.rodata .rodata.*)
+    *libgcc.a:*(.rodata .rodata.*)
     . = ALIGN(4);
   } >FLASH_KERNEL
 
   /* Constant user data goes into FLASH_USER */
+  /* .rodata sections (constants, strings, etc.) */
   .user_rodata :
   {
     . = ALIGN(4);
-    user/*.o(.rodata .rodata*)         /* .rodata sections (constants, strings, etc.) */
-    util/*.o(.rodata .rodata*)         /* .rodata sections (constants, strings, etc.) */
-
+    *libUSER.a:*(.rodata .rodata.*)
     . = ALIGN(4);
   } >FLASH_USER
 
@@ -114,9 +115,11 @@ SECTIONS
   {
     . = ALIGN(4);
     _kernel_sdata = .;        /* create a global symbol at data start */
-    kernel/*.o(.data .data*)
-    portable/*.o(.data .data*)
-    third_party/*.o(.data .data*)
+    *CMakeFiles/energos.elf.dir/*.obj(.data .data.*)
+    *libPORT_LIB.a:*(.data .data.*)
+    *libHAL.a:*(.data .data.*)
+    *libUTILITY.a:*(.data .data.*)
+    *(.igot.plt)
 
     . = ALIGN(4);
     _kernel_edata = .;        /* define a global symbol at data end */
@@ -127,8 +130,7 @@ SECTIONS
     . = ALIGN(4);
     _user_sdata = .;        /* create a global symbol at data start */
 
-    user/*.o(.data .data*)
-    util/*.o(.data .data*)
+    *libUSER.a:*(.data .data.*)
 
     . = ALIGN(4);
     _user_edata = .;        /* define a global symbol at data end */
@@ -141,9 +143,10 @@ SECTIONS
     /* This is used by the startup in order to initialize the .bss secion */
     _sbss = .;         /* define a global symbol at bss start */
     __kernel_bss_start__ = _sbss;
-    kernel/*.o (.bss .bss* COMMON)
-    portable/*.o (.bss .bss* COMMON)
-    third_party/*.o (.bss .bss* COMMON)
+    *CMakeFiles/energos.elf.dir/*.obj(.bss .bss.* COMMON)
+    *libPORT_LIB.a:*(.bss .bss.* COMMON)
+    *libHAL.a:*(.bss .bss.* COMMON)
+    *libUTILITY.a:*(.bss .bss.* COMMON)
 
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
@@ -156,8 +159,7 @@ SECTIONS
     /* This is used by the startup in order to initialize the .bss secion */
     __user_bss_start__ = .;
 
-    user/*.o (.bss .bss* COMMON)
-    util/*.o (.bss .bss* COMMON)
+    *libUSER.a:*(.bss .bss.* COMMON)
 
     . = ALIGN(4);
     __user_bss_end__ = .;
@@ -186,6 +188,13 @@ SECTIONS
 
   __periph_start      = ORIGIN(PERIPH);
   __periph_end        = ORIGIN(PERIPH) + LENGTH(PERIPH);
+
+  .debug 0 :
+  {
+    *(.debug*)
+  }
+  .relocations 0 : { *(.rel.iplt) }
+  .comment 0 : { *(.comment) }
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

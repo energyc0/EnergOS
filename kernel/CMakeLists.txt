@@ -8,6 +8,10 @@ slab.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})
+target_link_options(${FIRMWARE_NAME}.elf PRIVATE
+    "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${FIRMWARE_NAME}.map"
+    "-Wl,--orphan-handling=warn"
+)
 target_include_directories(${FIRMWARE_NAME}.elf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${PORT_DIR})
 target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${USER_DIR})

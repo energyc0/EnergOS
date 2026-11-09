@@ -78,8 +78,8 @@ void Init_MPU(void) {
 
 void Reset_Handler() {
   memcpy(&_kernel_sdata, &_sikerneldata,
-         (char*)&_kernel_edata - (char*)&_kernel_edata);
-  memcpy(&_user_sdata, &_siuserdata, (char*)&_user_edata - (char*)&_user_edata);
+         (char*)&_kernel_edata - (char*)&_kernel_sdata);
+  memcpy(&_user_sdata, &_siuserdata, (char*)&_user_edata - (char*)&_user_sdata);
   memset(&__kernel_bss_start__, 0,
          (char*)&__kernel_bss_end__ - (char*)&__kernel_bss_start__);
   memset(&__user_bss_start__, 0,
@@ -95,7 +95,7 @@ void Reset_Handler() {
   while (1);
 }
 
-__attribute__((section(".isr_vector"))) const uint32_t* isr_vector[] = {
+__attribute__((section(".isr_vector"))) const uint32_t* isr_vector[101] = {
     [0] = (uint32_t*)&_estack,         [1] = (uint32_t*)Reset_Handler,
     [4] = (uint32_t*)MemFault_Handler, [3] = (uint32_t*)HardFault_Handler,
     [11] = (uint32_t*)SVC_Handler,     [14] = (uint32_t*)PendSV_Handler,

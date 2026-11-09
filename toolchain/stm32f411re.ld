@@ -194,11 +194,14 @@ SECTIONS
   __priv_periph_start      = ORIGIN(PRIV_PERIPH);
   __priv_periph_end        = ORIGIN(PRIV_PERIPH) + LENGTH(PRIV_PERIPH);
 
-  .debug 0 :
-  {
-    *(.debug*)
-  }
-  .relocations 0 : { *(.rel.iplt) }
+  .debug_info     0 : { *(.debug_info) }
+  .debug_abbrev   0 : { *(.debug_abbrev) }
+  .debug_aranges  0 : { *(.debug_aranges) }
+  .debug_rnglists 0 : { *(.debug_rnglists) }
+  .debug_loclists 0 : { *(.debug_loclists) }
+  .debug_line     0 : { *(.debug_line) *(.debug_line_str) }
+  .debug_str      0 : { *(.debug_str) }
+  .debug_frame    0 : { *(.debug_frame) }
   .comment 0 : { *(.comment) }
 
   /* Remove information from the standard libraries */
@@ -207,6 +210,10 @@ SECTIONS
     libc.a ( * )
     libm.a ( * )
     /*libgcc.a ( * )*/
+
+    *(.iplt)
+    *(.rel.iplt)
+    *(.igot.plt)
   }
 
   .ARM.attributes 0 : { *(.ARM.attributes) }

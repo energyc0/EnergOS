@@ -38,7 +38,7 @@ SVC_Handler:
     mrsne r0, psp
     b SVC_Handler_C
 
-#include "syscall_defs.h"
+#include "kernel/syscall_defs.h"
 
 .thumb_func
 .global pStart_First_Task

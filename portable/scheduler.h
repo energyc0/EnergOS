@@ -1,5 +1,5 @@
-#ifndef PORT_SCHEDULER_H
-#define PORT_SCHEDULER_H
+#ifndef PORTABLE_SCHEDULER_H
+#define PORTABLE_SCHEDULER_H
 
 #include <stdint.h>
 

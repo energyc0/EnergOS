@@ -1,5 +1,5 @@
-#ifndef PORT_TIME_H
-#define PORT_TIME_H
+#ifndef PORTABLE_TIME_H
+#define PORTABLE_TIME_H
 
 #include <stdint.h>
 

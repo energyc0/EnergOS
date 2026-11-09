@@ -1,7 +1,7 @@
 #include "syscall.h"
 
-#include "port_syscall.h"
-#include "syscall_defs.h"
+#include "portable/syscall.h"
+#include "kernel/syscall_defs.h"
 
 void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
 void Yield(void) { pSystem_Call(SYSCALL_YIELD); }

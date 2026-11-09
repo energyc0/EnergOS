@@ -1,5 +1,5 @@
-#ifndef PORT_UART_H
-#define PORT_UART_H
+#ifndef PORTABLE_UART_H
+#define PORTABLE_UART_H
 
 #include <stdint.h>
 

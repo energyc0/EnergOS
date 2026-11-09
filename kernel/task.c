@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "kernel_config.h"
-#include "port_scheduler.h"
-#include "port_time.h"
+#include "portable/kernel_config.h"
+#include "portable/scheduler.h"
+#include "portable/time.h"
 #include "sync.h"
 #include "syscall.h"
 #include "uart_queue.h"

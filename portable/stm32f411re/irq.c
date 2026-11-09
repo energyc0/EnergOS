@@ -2,13 +2,13 @@
 #include <stdint.h>
 
 #include "cmsis_gcc.h"
-#include "port_irq.h"
-#include "port_scheduler.h"
-#include "port_syscall.h"
-#include "port_uart.h"
+#include "irq.h"
+#include "scheduler.h"
+#include "syscall.h"
+#include "uart.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
-#include "util.h"
+#include "util/util.h"
 
 typedef struct {
   uint32_t r0;

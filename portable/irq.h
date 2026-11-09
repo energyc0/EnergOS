@@ -1,5 +1,5 @@
-#ifndef PORT_IRQ_H
-#define PORT_IRQ_H
+#ifndef PORTABLE_IRQ_H
+#define PORTABLE_IRQ_H
 
 #include <stdint.h>
 

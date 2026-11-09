@@ -3,10 +3,10 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "port_irq.h"
-#include "port_scheduler.h"
-#include "port_syscall.h"
-#include "port_time.h"
+#include "portable/irq.h"
+#include "portable/scheduler.h"
+#include "portable/syscall.h"
+#include "portable/time.h"
 #include "sync.h"
 #include "syscall_defs.h"
 #include "task.h"

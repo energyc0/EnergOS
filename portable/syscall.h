@@ -1,5 +1,5 @@
-#ifndef PORT_SYSCALL_H
-#define PORT_SYSCALL_H
+#ifndef PORTABLE_SYSCALL_H
+#define PORTABLE_SYSCALL_H
 
 #include <stdint.h>
 

@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include "task.h"
 #include "user/printer.h"
 

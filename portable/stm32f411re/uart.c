@@ -1,9 +1,8 @@
 #include <stdint.h>
 
-#include "port_uart.h"
+#include "uart.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_def.h"
-#include "util.h"
+#include "util/util.h"
 
 UART_HandleTypeDef huart2;
 

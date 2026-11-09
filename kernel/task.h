@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "kernel_config.h"
+#include "portable/kernel_config.h"
 #include "sync.h"
 /*
   T_UNUSED - task is not initialized.

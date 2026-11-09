@@ -1,8 +1,8 @@
 #ifndef KASSERT_H
 #define KASSERT_H
 
-#include "port_irq.h"
-#include "port_uart.h"
+#include "portable/irq.h"
+#include "portable/uart.h"
 
 #define panic(msg)                              \
   do {                                          \

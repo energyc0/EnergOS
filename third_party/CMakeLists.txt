@@ -9,6 +9,7 @@ add_library(HAL STATIC ${hal_srcs})
 target_compile_options(HAL PRIVATE -w)
 
 target_include_directories(HAL PUBLIC
+    ${PROJECT_SOURCE_DIR}
 	STM32CubeF4/Drivers/CMSIS/Device/ST/STM32F4xx/Include
 	STM32CubeF4/Drivers/CMSIS/Core/Include
 	STM32CubeF4/Drivers/STM32F4xx_HAL_Driver/Inc

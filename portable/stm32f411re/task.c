@@ -1,13 +1,11 @@
-#include "task.h"
+#include "kernel/task.h"
 
 #include <stdint.h>
 
-#include "kassert.h"
-#include "port_scheduler.h"
+#include "kernel/kassert.h"
+#include "scheduler.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_conf.h"
-#include "syscall.h"
-#include "task.h"
+#include "kernel/syscall.h"
 
 extern void Zombie_Task(void);
 

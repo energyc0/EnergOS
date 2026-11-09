@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "port_uart.h"
-#include "uart_queue.h"
-#include "util.h"
+#include "portable/uart.h"
+#include "kernel/uart_queue.h"
+#include "util/util.h"
 
 static uint32_t Read_Char_Internal(char* c) {
   return pUART_ReceiveByte((uint8_t*)c, UINT32_MAX);

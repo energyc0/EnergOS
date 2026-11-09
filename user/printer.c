@@ -1,7 +1,7 @@
 #include "printer.h"
 
 #include "io.h"
-#include "port_time.h"
+#include "portable/time.h"
 #include "sync.h"
 
 mutex_t printer_mutex = MUTEX_INIT();

@@ -3,8 +3,8 @@
 #include <stdatomic.h>
 
 #include "kassert.h"
-#include "port_irq.h"
-#include "port_scheduler.h"
+#include "portable/irq.h"
+#include "portable/scheduler.h"
 #include "syscall.h"
 #include "task.h"
 

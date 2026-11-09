@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 #include "kassert.h"
-#include "port_irq.h"
-#include "port_scheduler.h"
-#include "port_uart.h"
+#include "portable/irq.h"
+#include "portable/scheduler.h"
+#include "portable/uart.h"
 #include "sync.h"
 #include "syscall.h"
 #include "task.h"

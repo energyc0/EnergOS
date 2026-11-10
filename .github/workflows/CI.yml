@@ -23,7 +23,7 @@ jobs:
         run: | 
           cmake -B build \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DCMAKE_TOOLCHAIN_FILE=cmake/cortex-m4.cmake
+          -DCMAKE_TOOLCHAIN_FILE=toolchain/cortex-m4.cmake
           cmake --build build
       - name: Run clang-tidy
         run: | 

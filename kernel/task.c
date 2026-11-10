@@ -11,6 +11,10 @@
 #include "uart_queue.h"
 #include "user/io.h"
 
+uint32_t kernel_tasks_stack[NTASKS][TASK_STACK_SIZE];
+__attribute__((
+    section(".user_bss"))) uint32_t user_tasks_stack[NTASKS][TASK_STACK_SIZE];
+
 // Mutex to access tasks[], task_count, current_task and task_start_id
 mutex_t tasks_mutex = MUTEX_INIT();
 // Need to lock tasks_mutex before using
@@ -78,9 +82,12 @@ void Print_Tasks(void *param) {
   Write_Char('\n');
 }
 
+// Initialize the task variable and return its index in task table
 static task_t *Find_Free_Task(void) {
   for (uint32_t i = 0; i < NTASKS; i++) {
-    if (tasks[i].state == T_UNUSED) return &tasks[i];
+    if (tasks[i].state == T_UNUSED) {
+      return &tasks[i];
+    }
   }
   return 0;
 }
@@ -88,9 +95,14 @@ static task_t *Find_Free_Task(void) {
 void Init_Task(task_t *task, uint32_t tid, const char *name,
                void (*entry)(void *param), void *param,
                enum task_privilege privilege) {
+  uint32_t task_idx = task - tasks;
+  uint32_t *task_stack;
+  if (privilege == T_KERNEL)
+    task_stack = user_tasks_stack[task_idx] + TASK_STACK_SIZE - 1;
+  else
+    task_stack = user_tasks_stack[task_idx] + TASK_STACK_SIZE - 1;
   task->entry = entry;
-  task->sp = pTask_Stack_Init(
-      (uint32_t *)((uint8_t *)task->stack + sizeof(task->stack)), entry, param);
+  task->sp = pTask_Stack_Init(task_stack, entry, param);
   task->name = name;
   task->tid = tid;
   task->state = T_READY;

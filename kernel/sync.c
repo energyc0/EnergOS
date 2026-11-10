@@ -24,6 +24,8 @@ typedef struct semaphore_impl {
   atomic_int limit;
 } semaphore_impl_t;
 
+#define GET_MUTEX_IMPL(mtx) (mutex_impl_t*)(mtx)
+
 extern task_t* current_task;
 extern mutex_t tasks_mutex;
 
@@ -40,21 +42,10 @@ _Static_assert(sizeof(semaphore_impl_t) <= sizeof(semaphore_t),
 _Static_assert(_Alignof(semaphore_t) >= _Alignof(semaphore_impl_t),
                "semaphore storage is not aligned for its implementation");
 
-static void Mutex_Load(const mutex_t* mtx, mutex_impl_t* impl) {
-  const uint8_t* src = (const uint8_t*)mtx;
-  uint8_t* dst = (uint8_t*)impl;
-  for (uint32_t i = 0; i < sizeof(*impl); i++) dst[i] = src[i];
-}
-
-static void Mutex_Store(mutex_t* mtx, const mutex_impl_t* impl) {
-  uint8_t* dst = (uint8_t*)mtx;
-  const uint8_t* src = (const uint8_t*)impl;
-  for (uint32_t i = 0; i < sizeof(*impl); i++) dst[i] = src[i];
-}
-
 void spinlock_lock(spinlock_t* lck) {
   spinlock_impl_t* impl = (spinlock_impl_t*)lck;
-  while (atomic_flag_test_and_set_explicit(&impl->locked, memory_order_acquire));
+  while (
+      atomic_flag_test_and_set_explicit(&impl->locked, memory_order_acquire));
   impl->owner = current_task;
 }
 
@@ -67,12 +58,10 @@ void spinlock_unlock(spinlock_t* lck) {
 void Kernel_Mutex_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   task_t* task = Get_Current_Task();
-  mutex_impl_t impl;
-  Mutex_Load(mtx, &impl);
+  mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
 
-  if (impl.owner == 0 || impl.owner == task) {
-    impl.owner = task;
-    Mutex_Store(mtx, &impl);
+  if (impl->owner == 0 || impl->owner == task) {
+    impl->owner = task;
     pIRQ_Restore(irq_state);
     return;
   }
@@ -80,13 +69,12 @@ void Kernel_Mutex_Lock(mutex_t* mtx) {
   task->state = T_BLOCKED;
   task->wait_next = 0;
 
-  if (impl.wait_tail) {
-    impl.wait_tail->wait_next = task;
+  if (impl->wait_tail) {
+    impl->wait_tail->wait_next = task;
   } else {
-    impl.wait_head = task;
+    impl->wait_head = task;
   }
-  impl.wait_tail = task;
-  Mutex_Store(mtx, &impl);
+  impl->wait_tail = task;
 
   pIRQ_Restore(irq_state);
   pPend_Task_Switch();
@@ -94,34 +82,30 @@ void Kernel_Mutex_Lock(mutex_t* mtx) {
 
 void Kernel_Mutex_Unlock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
-  mutex_impl_t impl;
-  Mutex_Load(mtx, &impl);
-  if (impl.wait_head) {
-    task_t* task = impl.wait_head;
-    impl.wait_head = task->wait_next;
+  mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
+  if (impl->wait_head) {
+    task_t* task = impl->wait_head;
+    impl->wait_head = task->wait_next;
     task->wait_next = 0;
-    if (impl.wait_tail == task) impl.wait_tail = 0;
+    if (impl->wait_tail == task) impl->wait_tail = 0;
     task->state = T_READY;
-    impl.owner = task;
+    impl->owner = task;
   } else {
-    impl.owner = 0;
+    impl->owner = 0;
   }
-  Mutex_Store(mtx, &impl);
   pIRQ_Restore(irq_state);
 }
 
 int Kernel_Mutex_Try_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   // It may be set after mutex_unlock()
-  mutex_impl_t impl;
-  Mutex_Load(mtx, &impl);
-  if (impl.owner == Get_Current_Task()) {
+  mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
+  if (impl->owner == Get_Current_Task()) {
     pIRQ_Restore(irq_state);
     return 1;
   }
-  if (impl.owner == 0) {
-    impl.owner = current_task;
-    Mutex_Store(mtx, &impl);
+  if (impl->owner == 0) {
+    impl->owner = current_task;
     pIRQ_Restore(irq_state);
     return 1;
   } else {

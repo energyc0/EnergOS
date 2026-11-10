@@ -1,5 +1,6 @@
 #include "uart_queue.h"
 
+#include <stdatomic.h>
 #include <stdint.h>
 
 #include "kassert.h"
@@ -13,8 +14,8 @@
 #define UART_QUEUE_SIZE 256u
 
 __attribute__((section(".user_data"))) static uint8_t tx_queue[UART_QUEUE_SIZE];
-__attribute__((section(".user_data"))) static uint32_t tx_head;
-__attribute__((section(".user_data"))) static uint32_t tx_tail;
+__attribute__((section(".user_data"))) static _Atomic uint32_t tx_head;
+__attribute__((section(".user_data"))) static _Atomic uint32_t tx_tail;
 __attribute__((section(".user_data"))) static mutex_t tx_producer_mutex =
     MUTEX_INIT();
 
@@ -26,10 +27,11 @@ __attribute__((section(".user_text"))) static uint32_t Queue_Next(
 __attribute__((section(".user_text"))) static void Queue_Write_Byte(
     uint8_t byte) {
   while (1) {
-    uint32_t next_tail = Queue_Next(tx_tail);
-    if (next_tail != tx_head) {
-      tx_queue[tx_tail] = byte;
-      tx_tail = next_tail;
+    uint32_t tail = atomic_load_explicit(&tx_tail, memory_order_relaxed);
+    uint32_t next_tail = Queue_Next(tail);
+    if (next_tail != atomic_load_explicit(&tx_head, memory_order_acquire)) {
+      tx_queue[tail] = byte;
+      atomic_store_explicit(&tx_tail, next_tail, memory_order_release);
       return;
     }
     Yield();
@@ -37,20 +39,15 @@ __attribute__((section(".user_text"))) static void Queue_Write_Byte(
 }
 
 static int Queue_Peek_Byte(uint8_t *byte) {
-  Kernel_Mutex_Lock(&tx_producer_mutex);
-  if (tx_head == tx_tail) {
-    Kernel_Mutex_Unlock(&tx_producer_mutex);
-    return 0;
-  }
-  *byte = tx_queue[tx_head];
-  Kernel_Mutex_Unlock(&tx_producer_mutex);
+  uint32_t head = atomic_load_explicit(&tx_head, memory_order_relaxed);
+  if (head == atomic_load_explicit(&tx_tail, memory_order_acquire)) return 0;
+  *byte = tx_queue[head];
   return 1;
 }
 
 static void Queue_Consume_Byte(void) {
-  Kernel_Mutex_Lock(&tx_producer_mutex);
-  tx_head = Queue_Next(tx_head);
-  Kernel_Mutex_Unlock(&tx_producer_mutex);
+  uint32_t head = atomic_load_explicit(&tx_head, memory_order_relaxed);
+  atomic_store_explicit(&tx_head, Queue_Next(head), memory_order_release);
 }
 
 __attribute__((section(".user_text"))) static uint32_t Queue_Character(char c) {

@@ -11,9 +11,8 @@ void printer(void* msg) {
     while (1) {
       mutex_lock(&printer_mutex);
       // uint32_t tick = pGet_Tick();
-      Write_Str("Fuck niggers! ");
+      Write_Str("PRINTER: ");
       Write_Str((const char*)msg);
-      Write_Char('\n');
       mutex_unlock(&printer_mutex);
     }
   }

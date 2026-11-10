@@ -8,10 +8,13 @@ slab.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})
+# use "-Wl,--orphan-handling=warn" to warn about orphan sections,
+# or  "-Wl,--orphan-handling=place" to place them at the end of the output file
 target_link_options(${FIRMWARE_NAME}.elf PRIVATE
     "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${FIRMWARE_NAME}.map"
-    "-Wl,--orphan-handling=warn"
+    "-Wl,--orphan-handling=place"
 )
+
 target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${PROJECT_SOURCE_DIR})
 target_link_libraries(${FIRMWARE_NAME}.elf PORT_LIB USER HAL UTILITY gcc)
 

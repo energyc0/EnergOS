@@ -1,13 +1,15 @@
 
+#include "irq.h"
+
 #include <stdint.h>
 
 #include "cmsis_gcc.h"
-#include "irq.h"
+#include "kernel/task.h"
 #include "scheduler.h"
-#include "syscall.h"
-#include "uart.h"
 #include "stm32f411xe.h"
 #include "stm32f4xx_hal.h"
+#include "syscall.h"
+#include "uart.h"
 #include "util/util.h"
 
 typedef struct {
@@ -160,6 +162,7 @@ void MemFault_Handler(void) {
 }
 
 void MemFault_Handler_C(Handler_Frame_t *regs) {
+#ifdef DEBUG
   pUART_SendString((uint8_t *)"Memory violation!\n\r");
   Read_Registers(regs);
 
@@ -184,4 +187,8 @@ void MemFault_Handler_C(Handler_Frame_t *regs) {
 
   while ((1)) {
   }
+#else
+  (void)regs;
+  Task_Delete(Get_Current_Task());
+#endif
 }

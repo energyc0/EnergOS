@@ -140,11 +140,12 @@ SECTIONS
   
   /* Uninitialized data section */
   . = ALIGN(4);
-  .kernel_bss :
+  .kernel_bss (NOLOAD) :
   {
     /* This is used by the startup in order to initialize the .bss secion */
     _sbss = .;         /* define a global symbol at bss start */
     __kernel_bss_start__ = _sbss;
+    *(.kernel_bss .kernel_bss.*)
     *CMakeFiles/energos.elf.dir/*.obj(.bss .bss.* COMMON)
     *libPORT_LIB.a:*(.bss .bss.* COMMON)
     *libHAL.a:*(.bss .bss.* COMMON)
@@ -156,11 +157,11 @@ SECTIONS
   } >RAM_KERNEL
 
   . = ALIGN(4);
-  .user_bss :
+  .user_bss (NOLOAD) :
   {
     /* This is used by the startup in order to initialize the .bss secion */
     __user_bss_start__ = .;
-
+    *(.user_bss .user_bss.*)
     *libUSER.a:*(.bss .bss.* COMMON)
 
     . = ALIGN(4);

@@ -7,6 +7,7 @@
 #include "portable/scheduler.h"
 #include "portable/syscall.h"
 #include "portable/time.h"
+#include "portable/uart.h"
 #include "sync.h"
 #include "syscall_defs.h"
 #include "task.h"
@@ -87,6 +88,9 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       break;
     case SYSCALL_PRINT_TASKS:
       Kernel_Print_Tasks();
+      break;
+    case SYSCALL_UART_READ:
+      *ret = pUART_ReceiveByte((uint8_t *)arg0, 0);
       break;
     default:
       panic("Undefined syscall number");

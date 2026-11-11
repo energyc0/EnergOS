@@ -1,7 +1,8 @@
 #include "shell.h"
 
-#include "io.h"
 #include <stdint.h>
+
+#include "io.h"
 #include "syscall.h"
 
 #define SHELL_MAX_LINE 128u
@@ -43,7 +44,7 @@ static void Read_Prompt(char* buf, uint32_t size) {
     Read_Char(&c);
 
     if (c == SHELL_CR || c == SHELL_LF) {
-      Write_Str("\r\n");
+      Write_Str("\n");
       buf[len] = '\0';
       return;
     }
@@ -114,14 +115,14 @@ static void Parse_Prompt(const char* cmd) {
 
   Write_Str("unknown command: ");
   Write_Str(argv[0]);
-  Write_Str("\r\n");
+  Write_Str("\n");
 }
 
 void Shell_Start(void* param) {
   (void)param;
   char line[SHELL_MAX_LINE];
 
-  Write_Str("\r\nEnergOS shell. Type 'help' for commands.\r\n");
+  Write_Str("\nEnergOS shell. Type 'help' for commands.\n");
 
   for (;;) {
     Send_Prompt();
@@ -138,14 +139,14 @@ static void Help(void* param) {
     Write_Str(g_cmds[i].name);
     Write_Str(" - ");
     Write_Str(g_cmds[i].help);
-    Write_Str("\r\n");
+    Write_Str("\n");
   }
 }
 
 static void Echo(void* param) {
   const char* text = param;
   if (text != 0) Write_Str(text);
-  Write_Str("\r\n");
+  Write_Str("\n");
 }
 
 static void Task_List(void* param) {

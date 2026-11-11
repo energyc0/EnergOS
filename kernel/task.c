@@ -144,7 +144,7 @@ void Task_Delete(task_t *task) {
 
 void Scheduler_Switch(void) {
   // PendSV cannot wait on a mutex held by the task it just preempted.
-  if (Kernel_Mutex_Try_Lock(&tasks_mutex) == S_BUSY) return;
+  if (Kernel_Mutex_Try_Lock(&tasks_mutex) != S_SUCCESS) return;
   if (task_count == 0) {
     Kernel_Mutex_Unlock(&tasks_mutex);
     return;
@@ -157,12 +157,16 @@ void Scheduler_Switch(void) {
 
     Kernel_Mutex_Lock(&tasks[idx].task_mutex);
     if (tasks[idx].state == T_READY) {
+      task_t *next_task = &tasks[idx];
       if (current_task && current_task->state == T_RUNNING)
         current_task->state = T_READY;
-      current_task = &tasks[idx];
-      current_task->state = T_RUNNING;
-      Kernel_Mutex_Unlock(&tasks[idx].task_mutex);
+      next_task->state = T_RUNNING;
+
+      uint32_t irq_state = pIRQ_Save();
+      Kernel_Mutex_Unlock(&next_task->task_mutex);
       Kernel_Mutex_Unlock(&tasks_mutex);
+      current_task = next_task;
+      pIRQ_Restore(irq_state);
       return;
     }
     Kernel_Mutex_Unlock(&tasks[idx].task_mutex);

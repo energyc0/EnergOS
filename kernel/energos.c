@@ -11,7 +11,7 @@ static const char task_message_2[] __attribute__((section(".user_rodata"))) =
 void main() {
   // Task_Create("p1", printer, (void *)task_message_1, T_USER);
   // Task_Create("p2", printer, (void *)task_message_2, T_USER);
-  Task_Create("bad_task", Bad_Task, 0, T_USER);
+  // Task_Create("bad_task", Bad_Task, 0, T_USER);
   Task_Create("Shell", Shell_Start, 0, T_USER);
   Scheduler_Start();
 }

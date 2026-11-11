@@ -43,6 +43,8 @@ uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param,
 
 void Task_Delete(task_t *task);
 
+void Kernel_Print_Tasks(void);
+
 // Sleep until somebody calls wakeup
 void Task_Sleep();
 

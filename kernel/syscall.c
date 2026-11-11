@@ -85,6 +85,9 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
     case SYSCALL_MUTEX_TRY_LOCK:
       *ret = (uint32_t)Kernel_Mutex_Try_Lock((mutex_t *)arg0);
       break;
+    case SYSCALL_PRINT_TASKS:
+      Kernel_Print_Tasks();
+      break;
     default:
       panic("Undefined syscall number");
   }

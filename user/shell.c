@@ -13,8 +13,8 @@
 
 static void Help(void* param);
 static void Echo(void* param);
+static void Task_List(void* param);
 static void Zombie_Task(void* param);
-extern void Print_Tasks(void* param);
 
 typedef struct {
   const char* name;
@@ -25,7 +25,7 @@ typedef struct {
 static const ShellCmd g_cmds[] = {
     {"help", Help, "show this help"},
     {"echo", Echo, "echo arguments"},
-    {"ts", Print_Tasks, "task list"},
+    {"ts", Task_List, "task list"},
     {"zombie", Zombie_Task, "create a zombie task"},
 };
 #define CMD_COUNT (sizeof(g_cmds) / sizeof(g_cmds[0]))
@@ -147,6 +147,12 @@ static void Echo(void* param) {
   if (text != 0) Write_Str(text);
   Write_Str("\r\n");
 }
+
+static void Task_List(void* param) {
+  (void)param;
+  Print_Task_List();
+}
+
 static void Zombie_Task(void* param) {
   (void)param;
   while (1);

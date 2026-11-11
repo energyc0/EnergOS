@@ -10,4 +10,5 @@ uint32_t Create(const char* name, void (*entry)(void* param), void* param) {
   return pSystem_Call_Arg3(SYSCALL_CREATE, (uint32_t)name, (uint32_t)entry,
                            (uint32_t)param);
 }
+void Print_Task_List(void) { pSystem_Call(SYSCALL_PRINT_TASKS); }
 void Sleep(uint32_t ticks) { pSystem_Call_Arg1(SYSCALL_SLEEP, ticks); }

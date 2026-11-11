@@ -15,6 +15,7 @@ void Exit(void);
 // param is passed unchanged; its storage must remain valid while the task uses
 // it.
 uint32_t Create(const char *name, void (*entry)(void *param), void *param);
+void Print_Task_List(void);
 // Pause exection of the current task for a specified number of ticks.
 void Sleep(uint32_t ticks);
 // Pause execution until scheduler won't wake the task up.

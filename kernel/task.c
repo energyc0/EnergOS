@@ -50,9 +50,7 @@ static void Alarm_Task(void *param) {
   }
 }
 
-void Print_Tasks(void *param) {
-  (void)param;
-
+void Kernel_Print_Tasks(void) {
   Kernel_Mutex_Lock(&tasks_mutex);
   for (int i = 0; i < NTASKS; i++) {
     Kernel_Mutex_Lock(&tasks[i].task_mutex);

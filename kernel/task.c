@@ -3,9 +3,12 @@
 #include <stdint.h>
 
 #include "kassert.h"
+#include "kernel/typedefs.h"
+#include "portable/irq.h"
 #include "portable/kernel_config.h"
 #include "portable/scheduler.h"
 #include "portable/time.h"
+#include "portable/uart.h"
 #include "sync.h"
 #include "syscall.h"
 #include "uart_queue.h"
@@ -98,7 +101,7 @@ void Init_Task(task_t *task, uint32_t tid, const char *name,
   uint32_t task_idx = task - tasks;
   uint32_t *task_stack;
   if (privilege == T_KERNEL)
-    task_stack = user_tasks_stack[task_idx] + TASK_STACK_SIZE - 1;
+    task_stack = kernel_tasks_stack[task_idx] + TASK_STACK_SIZE - 1;
   else
     task_stack = user_tasks_stack[task_idx] + TASK_STACK_SIZE - 1;
   task->entry = entry;
@@ -133,19 +136,17 @@ uint32_t Task_Create(const char *name, void (*entry)(void *param), void *param,
 }
 
 void Task_Delete(task_t *task) {
-  Kernel_Mutex_Lock(&tasks_mutex);
   if (task) {
-    Kernel_Mutex_Lock(&task->task_mutex);
+    uint32_t irq_state = pIRQ_Save();
     task->state = T_UNUSED;
     task_count--;
-    Kernel_Mutex_Unlock(&task->task_mutex);
+    pIRQ_Restore(irq_state);
   }
-  Kernel_Mutex_Unlock(&tasks_mutex);
 }
 
 void Scheduler_Switch(void) {
   // PendSV cannot wait on a mutex held by the task it just preempted.
-  if (!Kernel_Mutex_Try_Lock(&tasks_mutex)) return;
+  if (Kernel_Mutex_Try_Lock(&tasks_mutex) == S_BUSY) return;
   if (task_count == 0) {
     Kernel_Mutex_Unlock(&tasks_mutex);
     return;

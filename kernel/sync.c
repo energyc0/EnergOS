@@ -3,6 +3,7 @@
 #include <stdatomic.h>
 
 #include "kassert.h"
+#include "kernel/typedefs.h"
 #include "portable/irq.h"
 #include "portable/scheduler.h"
 #include "syscall.h"
@@ -42,28 +43,34 @@ _Static_assert(sizeof(semaphore_impl_t) <= sizeof(semaphore_t),
 _Static_assert(_Alignof(semaphore_t) >= _Alignof(semaphore_impl_t),
                "semaphore storage is not aligned for its implementation");
 
-void spinlock_lock(spinlock_t* lck) {
+sync_result_t spinlock_lock(spinlock_t* lck) {
   spinlock_impl_t* impl = (spinlock_impl_t*)lck;
   while (
       atomic_flag_test_and_set_explicit(&impl->locked, memory_order_acquire));
   impl->owner = current_task;
+  return S_SUCCESS;
 }
 
-void spinlock_unlock(spinlock_t* lck) {
+sync_result_t spinlock_unlock(spinlock_t* lck) {
   spinlock_impl_t* impl = (spinlock_impl_t*)lck;
   impl->owner = 0;
   atomic_flag_clear_explicit(&impl->locked, memory_order_release);
+  return S_SUCCESS;
 }
 
-void Kernel_Mutex_Lock(mutex_t* mtx) {
+sync_result_t Kernel_Mutex_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   task_t* task = Get_Current_Task();
   mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
 
-  if (impl->owner == 0 || impl->owner == task) {
+  if (impl->owner == task) {
+    pIRQ_Restore(irq_state);
+    return S_REENTER;
+  }
+  if (impl->owner == 0) {
     impl->owner = task;
     pIRQ_Restore(irq_state);
-    return;
+    return S_SUCCESS;
   }
 
   task->state = T_BLOCKED;
@@ -77,50 +84,60 @@ void Kernel_Mutex_Lock(mutex_t* mtx) {
   impl->wait_tail = task;
 
   pIRQ_Restore(irq_state);
+  // The task will be awakened by the Alarm_Task when it acquires the lock
   pPend_Task_Switch();
+  // The task acquired the lock.
+  return S_SUCCESS;
 }
 
-void Kernel_Mutex_Unlock(mutex_t* mtx) {
+sync_result_t Kernel_Mutex_Unlock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
-  if (impl->wait_head) {
-    task_t* task = impl->wait_head;
-    impl->wait_head = task->wait_next;
-    task->wait_next = 0;
-    if (impl->wait_tail == task) impl->wait_tail = 0;
-    task->state = T_READY;
-    impl->owner = task;
+  sync_result_t res;
+  if (impl->owner == Get_Current_Task()) {
+    if (impl->wait_head) {
+      task_t* task = impl->wait_head;
+      impl->wait_head = task->wait_next;
+      task->wait_next = 0;
+      if (impl->wait_tail == task) impl->wait_tail = 0;
+      task->state = T_READY;
+      impl->owner = task;
+    } else {
+      impl->owner = 0;
+    }
+    res = S_SUCCESS;
   } else {
-    impl->owner = 0;
+    res = S_NOT_OWNER;
   }
   pIRQ_Restore(irq_state);
+  return res;
 }
 
-int Kernel_Mutex_Try_Lock(mutex_t* mtx) {
+sync_result_t Kernel_Mutex_Try_Lock(mutex_t* mtx) {
   uint32_t irq_state = pIRQ_Save();
   // It may be set after mutex_unlock()
   mutex_impl_t* impl = GET_MUTEX_IMPL(mtx);
   if (impl->owner == Get_Current_Task()) {
     pIRQ_Restore(irq_state);
-    return 1;
+    return S_REENTER;
   }
   if (impl->owner == 0) {
     impl->owner = current_task;
     pIRQ_Restore(irq_state);
-    return 1;
-  } else {
-    pIRQ_Restore(irq_state);
-    return 0;
+    return S_SUCCESS;
   }
+  pIRQ_Restore(irq_state);
+  return S_BUSY;
 }
 
-void semaphore_init(semaphore_t* sem, int32_t limit) {
+sync_result_t semaphore_init(semaphore_t* sem, int32_t limit) {
   semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   atomic_store(&impl->value, limit);
   atomic_store(&impl->limit, limit);
+  return S_SUCCESS;
 }
 
-void semaphore_wait(semaphore_t* sem) {
+sync_result_t semaphore_wait(semaphore_t* sem) {
   semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   while (1) {
     uint32_t irq_state = pIRQ_Save();
@@ -128,14 +145,14 @@ void semaphore_wait(semaphore_t* sem) {
     if (value > 0) {
       atomic_fetch_sub(&impl->value, 1);
       pIRQ_Restore(irq_state);
-      return;
+      return S_SUCCESS;
     }
 
     pIRQ_Restore(irq_state);
     Yield();
   }
 }
-void semaphore_signal(semaphore_t* sem) {
+sync_result_t semaphore_signal(semaphore_t* sem) {
   semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   uint32_t irq_state = pIRQ_Save();
   int32_t value = atomic_load(&impl->value);
@@ -144,4 +161,5 @@ void semaphore_signal(semaphore_t* sem) {
     atomic_store(&impl->value, value + 1);
   }
   pIRQ_Restore(irq_state);
+  return S_SUCCESS;
 }

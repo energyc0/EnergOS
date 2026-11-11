@@ -67,20 +67,20 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       Syscall_Exit();
       break;
     case SYSCALL_CREATE:
-      *ret = Syscall_Create((const char *)arg0, (void (*)(void *))arg1,
-                            (void *)arg2);
+      *ret = (uint32_t)Syscall_Create((const char *)arg0,
+                                      (void (*)(void *))arg1, (void *)arg2);
       break;
     case SYSCALL_SLEEP:
       Syscall_Sleep(arg0);
       break;
     case SYSCALL_WAKEUP:
-      *ret = Syscall_Wakeup(arg0);
+      *ret = (uint32_t)Syscall_Wakeup(arg0);
       break;
     case SYSCALL_MUTEX_LOCK:
-      Kernel_Mutex_Lock((mutex_t *)arg0);
+      *ret = (uint32_t)Kernel_Mutex_Lock((mutex_t *)arg0);
       break;
     case SYSCALL_MUTEX_UNLOCK:
-      Kernel_Mutex_Unlock((mutex_t *)arg0);
+      *ret = (uint32_t)Kernel_Mutex_Unlock((mutex_t *)arg0);
       break;
     case SYSCALL_MUTEX_TRY_LOCK:
       *ret = (uint32_t)Kernel_Mutex_Try_Lock((mutex_t *)arg0);

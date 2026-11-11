@@ -152,6 +152,7 @@ uint32_t pSystem_Call_Arg4(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
   return r0;
 }
 
+__attribute__((naked)) void MemFault_Handler(void);
 void MemFault_Handler(void) {
   __asm volatile(
       "tst lr, #4      \n"
@@ -189,6 +190,9 @@ void MemFault_Handler_C(Handler_Frame_t *regs) {
   }
 #else
   (void)regs;
+  const char *msg = "MemFault\n\r";
   Task_Delete(Get_Current_Task());
+  pUART_SendString((const uint8_t *)msg);
+  pPend_Task_Switch();
 #endif
 }

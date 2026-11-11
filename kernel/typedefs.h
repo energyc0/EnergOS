@@ -17,4 +17,12 @@ typedef struct semaphore {
   uintptr_t _opaque[2];
 } semaphore_t;
 
+typedef enum {
+  S_SUCCESS = 0,
+  S_BUSY = 1,
+  S_DEADTASK = 2,
+  S_NOT_OWNER = 3,
+  S_REENTER = 4,
+} sync_result_t;
+
 #endif

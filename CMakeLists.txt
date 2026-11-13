@@ -3,6 +3,10 @@ project(EnergOS C ASM)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Adding debug flags.")
     add_compile_definitions(DEBUG)
     add_compile_options(-Og -g3)
 endif()

@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sync.h"
-
 #define SLAB_MIN_OBJ_SIZE sizeof(void*)
 // Align memory to word boundary (4 bytes for 32-bit MCUs)
 #define SLAB_ALIGN(size) (((size) + sizeof(void*) - 1) & ~(sizeof(void*) - 1))
@@ -21,7 +19,6 @@ typedef struct Slab {
   struct Slab_Header*
       free_list;    // Pointer to first free object (head of free list)
   uint8_t* memory;  // Start of memory region allocated for this slab
-  spinlock_t lock;  // Spinlock to access Slab's structure
 } slab_t;
 
 /**
@@ -46,7 +43,8 @@ void* Slab_Alloc(slab_t* slab);
     Free object, returning it to slab
     slab - Pointer to slab
     ptr - Pointer to object to free (must have been obtained via slab_alloc)
+    return 0 on error, 1 on success.
  */
-void Slab_Free(slab_t* slab, void* ptr);
+int Slab_Free(slab_t* slab, void* ptr);
 
 #endif

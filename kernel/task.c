@@ -55,32 +55,32 @@ void Kernel_Print_Tasks(void) {
   for (int i = 0; i < NTASKS; i++) {
     Kernel_Mutex_Lock(&tasks[i].task_mutex);
     if (tasks[i].state != T_UNUSED) {
-      Write_Str("Task name: ");
-      Write_Str(tasks[i].name);
-      Write_Str(" ,TID: ");
-      Write_Int(tasks[i].tid);
-      Write_Str(" , state: ");
+      pUART_SendString((const uint8_t *)"Task name: ");
+      pUART_SendString((const uint8_t *)tasks[i].name);
+      pUART_SendString((const uint8_t *)" ,TID: ");
+      pUart_Send_Int(tasks[i].tid);
+      pUART_SendString((const uint8_t *)" , state: ");
       switch (tasks[i].state) {
         case T_READY:
-          Write_Str("READY");
+          pUART_SendString((const uint8_t *)"READY");
           break;
         case T_RUNNING:
-          Write_Str("RUNNING");
+          pUART_SendString((const uint8_t *)"RUNNING");
           break;
         case T_WAITING:
-          Write_Str("WAITING");
+          pUART_SendString((const uint8_t *)"WAITING");
           break;
         case T_BLOCKED:
-          Write_Str("BLOCKED");
+          pUART_SendString((const uint8_t *)"BLOCKED");
           break;
         default:
           panic("Undefined task state");
       }
+      pUART_SendString((const uint8_t *)"\r\n");
     }
     Kernel_Mutex_Unlock(&tasks[i].task_mutex);
   }
   Kernel_Mutex_Unlock(&tasks_mutex);
-  Write_Char('\n');
 }
 
 // Initialize the task variable and return its index in task table

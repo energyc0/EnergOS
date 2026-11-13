@@ -4,7 +4,6 @@ syscall.c
 task.c
 uart_queue.c
 sync.c
-slab.c
 )
 
 add_executable(${FIRMWARE_NAME}.elf ${KERNEL_SRC})

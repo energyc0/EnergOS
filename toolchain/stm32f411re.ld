@@ -38,7 +38,6 @@ SECTIONS
     *CMakeFiles/energos.elf.dir/*.obj(.text .text.* .glue_7 .glue_7t .eh_frame)
     *libPORT_LIB.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
     *libHAL.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
-    *libUTILITY.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
     *libgcc.a:*(.text .text.* .glue_7 .glue_7t)
     *(.glue_7 .glue_7t .vfp11_veneer .v4_bx .iplt)
 
@@ -54,6 +53,7 @@ SECTIONS
     . = ALIGN(4);
     *(.user_text .user_text*)
     *libUSER.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
+    *libUTILITY.a:*(.text .text.* .glue_7 .glue_7t .eh_frame)
     . = ALIGN(4);
   } >FLASH_USER
 
@@ -65,7 +65,6 @@ SECTIONS
     *CMakeFiles/energos.elf.dir/*.obj(.rodata .rodata.*)
     *libPORT_LIB.a:*(.rodata .rodata.*)
     *libHAL.a:*(.rodata .rodata.*)
-    *libUTILITY.a:*(.rodata .rodata.*)
     *libgcc.a:*(.rodata .rodata.*)
     . = ALIGN(4);
   } >FLASH_KERNEL
@@ -77,6 +76,7 @@ SECTIONS
     . = ALIGN(4);
     *(.user_rodata .user_rodata.*)
     *libUSER.a:*(.rodata .rodata.*)
+    *libUTILITY.a:*(.rodata .rodata.*)
     . = ALIGN(4);
   } >FLASH_USER
 
@@ -120,7 +120,6 @@ SECTIONS
     *CMakeFiles/energos.elf.dir/*.obj(.data .data.*)
     *libPORT_LIB.a:*(.data .data.*)
     *libHAL.a:*(.data .data.*)
-    *libUTILITY.a:*(.data .data.*)
     *(.igot.plt)
 
     . = ALIGN(4);
@@ -134,6 +133,7 @@ SECTIONS
 
     *(.user_data user_data*)
     *libUSER.a:*(.data .data.*)
+    *libUTILITY.a:*(.data .data.*)
 
     . = ALIGN(4);
     _user_edata = .;        /* define a global symbol at data end */
@@ -150,7 +150,6 @@ SECTIONS
     *CMakeFiles/energos.elf.dir/*.obj(.bss .bss.* COMMON)
     *libPORT_LIB.a:*(.bss .bss.* COMMON)
     *libHAL.a:*(.bss .bss.* COMMON)
-    *libUTILITY.a:*(.bss .bss.* COMMON)
 
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
@@ -164,6 +163,7 @@ SECTIONS
     __user_bss_start__ = .;
     *(.user_bss .user_bss.*)
     *libUSER.a:*(.bss .bss.* COMMON)
+    *libUTILITY.a:*(.bss .bss.* COMMON)
 
     . = ALIGN(4);
     __user_bss_end__ = .;

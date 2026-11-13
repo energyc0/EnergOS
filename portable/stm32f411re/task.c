@@ -2,10 +2,9 @@
 
 #include <stdint.h>
 
-#include "kernel/kassert.h"
 #include "scheduler.h"
 #include "stm32f4xx_hal.h"
-#include "kernel/syscall.h"
+#include "user/syscall.h"
 
 extern void Zombie_Task(void);
 

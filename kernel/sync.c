@@ -6,8 +6,8 @@
 #include "kernel/typedefs.h"
 #include "portable/irq.h"
 #include "portable/scheduler.h"
-#include "syscall.h"
 #include "task.h"
+#include "user/syscall.h"
 
 typedef struct mutex_impl {
   task_t* owner;      // Pointer to the task that currently holds the lock

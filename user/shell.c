@@ -3,10 +3,10 @@
 #include <stdint.h>
 
 #include "io.h"
-#include "kernel/task.h"
 #include "kernel/typedefs.h"
 #include "portable/kernel_config.h"
 #include "syscall.h"
+#include "user/syscall.h"
 #include "util/slab.h"
 #include "util/util.h"
 
@@ -96,16 +96,25 @@ static int tokenize(char* line, char** argv, int max_args) {
 
 static void Parse_Prompt(struct args_for_tasks* p) {
   p->arg.argc = tokenize(p->line, p->arg.argv, SHELL_MAX_ARGS);
-  if (p->arg.argc == 0) return;
+  if (p->arg.argc == 0) {
+    Slab_Free(&shell_slab, p);
+    return;
+  }
 
   for (uint32_t i = 0; i < CMD_COUNT; i++) {
     const char* a = g_cmds[i].name;
     const char* b = p->arg.argv[0];
     if (Util_Strcmp(a, b) == 0) {
       uint32_t tid = Create(g_cmds[i].name, g_cmds[i].fn, &p->arg);
-      Write_Str("Created task with TID: ");
-      Write_Int(tid);
-      Write_Char('\n');
+      if (tid == 0) {
+        Write_Str("Error creating task.\n");
+      } else {
+        Write_Str("Created task with TID: ");
+        Write_Int(tid);
+        Write_Char('\n');
+        Wait(tid);
+      }
+      Slab_Free(&shell_slab, p);
       return;
     }
   }
@@ -113,6 +122,7 @@ static void Parse_Prompt(struct args_for_tasks* p) {
   Write_Str("unknown command: ");
   Write_Str(p->arg.argv[0]);
   Write_Str("\n");
+  Slab_Free(&shell_slab, p);
 }
 
 void Shell_Start(void* param) {
@@ -147,8 +157,11 @@ static void Help(void* param) {
 
 static void Echo(void* param) {
   task_args_t* text = param;
-  for (int i = 1; i < text->argc; i++) Write_Str(text->argv[i]);
-  Write_Str("\n");
+  for (int i = 1; i < text->argc; i++) {
+    Write_Str(text->argv[i]);
+    Write_Char(' ');
+  }
+  Write_Char('\n');
 }
 
 static void Task_List(void* param) {

@@ -1,11 +1,10 @@
-#include "syscall.h"
+#include "portable/syscall.h"
 
 #include <stdint.h>
 
 #include "kassert.h"
-#include "portable/irq.h"
+#include "portable/kernel_config.h"
 #include "portable/scheduler.h"
-#include "portable/syscall.h"
 #include "portable/time.h"
 #include "portable/uart.h"
 #include "sync.h"
@@ -13,6 +12,7 @@
 #include "task.h"
 
 extern mutex_t tasks_mutex;
+extern task_t tasks[NTASKS];
 
 static void Syscall_Exit(void) {
   Task_Delete(Get_Current_Task());
@@ -51,6 +51,26 @@ void Pause() {
   Yield();
 }
 */
+
+static uint32_t Syscall_Wait(uint32_t tid) {
+  if (tid == 0) return WAIT_RESULT_INVALID;
+
+  Kernel_Mutex_Lock(&tasks_mutex);
+  uint32_t result = WAIT_RESULT_INVALID;
+  for (uint32_t i = 0; i < NTASKS; i++) {
+    if (tasks[i].tid == tid) {
+      if (tasks[i].state == T_UNUSED) {
+        result = WAIT_RESULT_COMPLETE;
+      } else {
+        result = WAIT_RESULT_PENDING;
+        pPend_Task_Switch();
+      }
+      break;
+    }
+  }
+  Kernel_Mutex_Unlock(&tasks_mutex);
+  return result;
+}
 
 void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
                      uint32_t arg2, uint32_t arg3, uint32_t *ret) {
@@ -91,6 +111,9 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       break;
     case SYSCALL_UART_READ:
       *ret = pUART_ReceiveByte((uint8_t *)arg0, 0);
+      break;
+    case SYSCALL_WAIT:
+      *ret = Syscall_Wait((uint32_t)arg0);
       break;
     default:
       panic("Undefined syscall number");

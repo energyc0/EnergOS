@@ -10,9 +10,7 @@
 #include "portable/time.h"
 #include "portable/uart.h"
 #include "sync.h"
-#include "syscall.h"
 #include "uart_queue.h"
-#include "user/io.h"
 
 uint32_t kernel_tasks_stack[NTASKS][TASK_STACK_SIZE];
 __attribute__((
@@ -46,7 +44,7 @@ static void Alarm_Task(void *param) {
       Kernel_Mutex_Unlock(&tasks[i].task_mutex);
     }
     Kernel_Mutex_Unlock(&tasks_mutex);
-    Yield();
+    pPend_Task_Switch();
   }
 }
 

@@ -19,22 +19,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
-      - name: Build project
-        run: | 
-          cmake -B build \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DCMAKE_TOOLCHAIN_FILE=toolchain/cortex-m4.cmake
-          cmake --build build
-      - name: Run clang-tidy
-        run: | 
-          FILES=$(find kernel -type f \( -name '*.c' -o -name '*.h' \) \
-            ! -path '*/third_party/*')
-          run-clang-tidy -p=build -quiet $FILES
-      - name: Run clang-format
+      - name: Build and lint
         run: |
-          find . -not -path "./third_party/*" \
-            -not -path "./build/*" \
-            \( -iname '*.c' -o -iname '*.h' \) \
-            | xargs clang-format-22 --dry-run --Werror --Wno-error=unknown
+          ./scripts/build_and_lint.sh
 
   

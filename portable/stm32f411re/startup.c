@@ -107,6 +107,7 @@ void Init_MPU(void) {
 }
 
 void Reset_Handler() {
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   memcpy(&_kernel_sdata, &_sikerneldata,
          (char*)&_kernel_edata - (char*)&_kernel_sdata);
   memcpy(&_user_sdata, &_siuserdata, (char*)&_user_edata - (char*)&_user_sdata);
@@ -114,6 +115,7 @@ void Reset_Handler() {
          (char*)&__kernel_bss_end__ - (char*)&__kernel_bss_start__);
   memset(&__user_bss_start__, 0,
          (char*)&__user_bss_end__ - (char*)&__user_bss_start__);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   kassert(HAL_Init() == HAL_OK);
   GPIO_Init();

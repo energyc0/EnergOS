@@ -5,6 +5,9 @@
 #include "stm32f4xx_hal.h"
 #include "util/util.h"
 
+#define INT_BUFFER_SIZE 12
+#define HEX_BUFFER_SIZE 11
+
 UART_HandleTypeDef huart2;
 
 uint32_t pUart_Send(const uint8_t *data, uint32_t length) {
@@ -101,13 +104,13 @@ uint32_t pUART_Receive(uint8_t *buf, uint32_t size, uint32_t timeout_ms) {
 }
 
 uint32_t pUart_Send_Hex(uint32_t value) {
-  char buffer[11];
+  char buffer[HEX_BUFFER_SIZE];
   Util_Itohex(value, buffer, sizeof(buffer));
   return pUART_SendString((const uint8_t *)buffer);
 }
 
 uint32_t pUart_Send_Int(int32_t value) {
-  char buffer[12];
+  char buffer[INT_BUFFER_SIZE];
   Util_Itoa(value, buffer, sizeof(buffer));
   return pUART_SendString((const uint8_t *)buffer);
 }

@@ -7,7 +7,6 @@
 #include "portable/irq.h"
 #include "portable/scheduler.h"
 #include "task.h"
-#include "user/syscall.h"
 
 typedef struct mutex_impl {
   task_t* owner;      // Pointer to the task that currently holds the lock
@@ -43,7 +42,7 @@ _Static_assert(sizeof(semaphore_impl_t) <= sizeof(semaphore_t),
 _Static_assert(_Alignof(semaphore_t) >= _Alignof(semaphore_impl_t),
                "semaphore storage is not aligned for its implementation");
 
-sync_result_t spinlock_lock(spinlock_t* lck) {
+sync_result_t Spinlock_Lock(spinlock_t* lck) {
   spinlock_impl_t* impl = (spinlock_impl_t*)lck;
   while (
       atomic_flag_test_and_set_explicit(&impl->locked, memory_order_acquire));
@@ -51,7 +50,7 @@ sync_result_t spinlock_lock(spinlock_t* lck) {
   return S_SUCCESS;
 }
 
-sync_result_t spinlock_unlock(spinlock_t* lck) {
+sync_result_t Spinlock_Unlock(spinlock_t* lck) {
   spinlock_impl_t* impl = (spinlock_impl_t*)lck;
   impl->owner = 0;
   atomic_flag_clear_explicit(&impl->locked, memory_order_release);
@@ -130,14 +129,7 @@ sync_result_t Kernel_Mutex_Try_Lock(mutex_t* mtx) {
   return S_BUSY;
 }
 
-sync_result_t semaphore_init(semaphore_t* sem, int32_t limit) {
-  semaphore_impl_t* impl = (semaphore_impl_t*)sem;
-  atomic_store(&impl->value, limit);
-  atomic_store(&impl->limit, limit);
-  return S_SUCCESS;
-}
-
-sync_result_t semaphore_wait(semaphore_t* sem) {
+sync_result_t Kernel_Semaphore_Wait(semaphore_t* sem) {
   semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   while (1) {
     uint32_t irq_state = pIRQ_Save();
@@ -149,10 +141,10 @@ sync_result_t semaphore_wait(semaphore_t* sem) {
     }
 
     pIRQ_Restore(irq_state);
-    Yield();
+    pPend_Task_Switch();
   }
 }
-sync_result_t semaphore_signal(semaphore_t* sem) {
+sync_result_t Kernel_Semaphore_Signal(semaphore_t* sem) {
   semaphore_impl_t* impl = (semaphore_impl_t*)sem;
   uint32_t irq_state = pIRQ_Save();
   int32_t value = atomic_load(&impl->value);

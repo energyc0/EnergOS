@@ -127,7 +127,13 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
     case SYSCALL_WAIT:
       *ret = Syscall_Wait((uint32_t)arg0);
       break;
+    case SYSCALL_SEMAPHORE_WAIT:
+      *ret = (uint32_t)Kernel_Semaphore_Wait((semaphore_t *)arg0);
+      break;
+    case SYSCALL_SEMAPHORE_SIGNAL:
+      *ret = (uint32_t)Kernel_Semaphore_Signal((semaphore_t *)arg0);
+      break;
     default:
-      panic("Undefined syscall number");
+      Panic("Undefined syscall number");
   }
 }

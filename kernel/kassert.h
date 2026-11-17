@@ -4,7 +4,7 @@
 #include "portable/irq.h"
 #include "portable/uart.h"
 
-#define panic(msg)                              \
+#define Panic(msg)                              \
   do {                                          \
     pDisable_IRQ();                             \
     pUART_SendString((const uint8_t*)"PANIC!"); \
@@ -15,7 +15,7 @@
 
 #define kassert(expr)                           \
   do {                                          \
-    if ((expr) == 0) panic("Assertion failed"); \
+    if ((expr) == 0) Panic("Assertion failed"); \
   } while (0)
 
 #endif

@@ -72,7 +72,7 @@ void Kernel_Print_Tasks(void) {
           pUART_SendString((const uint8_t *)"BLOCKED");
           break;
         default:
-          panic("Undefined task state");
+          Panic("Undefined task state");
       }
       pUART_SendString((const uint8_t *)"\r\n");
     }

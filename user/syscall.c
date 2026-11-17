@@ -20,3 +20,6 @@ uint32_t Wait(uint32_t tid) {
     // If WAIT_RESULT_PENDING then try again
   }
 }
+uint32_t Read(void* buf, uint32_t n) {
+  return pSystem_Call_Arg2(SYSCALL_READ, (uint32_t)buf, n);
+}

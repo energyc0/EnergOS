@@ -27,4 +27,9 @@ uint32_t Read_Char(char* c);
 // The string will be null-terminated if at least one byte was read.
 uint32_t Read_Str(char* buf, uint32_t size);
 
+// Read a buffer of raw data from UART with blocking,
+// returns the number of bytes read.
+// Return size if all bytes were read, or fewer if timeout occurred.
+uint32_t Read_Buf(uint8_t* buf, uint32_t size);
+
 #endif

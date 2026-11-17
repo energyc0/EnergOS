@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "kassert.h"
+#include "kernel/typedefs.h"
 #include "portable/kernel_config.h"
 #include "portable/scheduler.h"
 #include "portable/time.h"
@@ -13,6 +14,8 @@
 
 extern mutex_t tasks_mutex;
 extern task_t tasks[NTASKS];
+
+static mutex_t read_mutex = MUTEX_INIT();
 
 static void Syscall_Exit(void) {
   Task_Delete(Get_Current_Task());
@@ -72,9 +75,15 @@ static uint32_t Syscall_Wait(uint32_t tid) {
   return result;
 }
 
+static uint32_t Syscall_Read(uint8_t *buf, uint32_t n) {
+  Kernel_Mutex_Lock(&read_mutex);
+  uint32_t res = pUART_Receive(buf, n, 0);
+  Kernel_Mutex_Unlock(&read_mutex);
+  return res;
+}
+
 void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
                      uint32_t arg2, uint32_t arg3, uint32_t *ret) {
-  (void)arg2;
   (void)arg3;
   switch (sysnum) {
     case SYSCALL_JUMP_FIRST_TASK:
@@ -109,8 +118,8 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
     case SYSCALL_PRINT_TASKS:
       Kernel_Print_Tasks();
       break;
-    case SYSCALL_UART_READ:
-      *ret = pUART_ReceiveByte((uint8_t *)arg0, 0);
+    case SYSCALL_READ:
+      *ret = Syscall_Read((uint8_t *)arg0, arg1);
       break;
     case SYSCALL_WAIT:
       *ret = Syscall_Wait((uint32_t)arg0);

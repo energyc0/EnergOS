@@ -1,14 +1,12 @@
 #include <stdint.h>
 
 #include "kernel/uart_queue.h"
-#include "kernel/syscall_defs.h"
-#include "portable/syscall.h"
 #include "syscall.h"
 #include "util/util.h"
 
 static uint32_t Read_Char_Internal(char* c) {
   if (c == 0) return 0;
-  while (!pSystem_Call_Arg1(SYSCALL_UART_READ, (uint32_t)c)) Yield();
+  while (!Read(c, 1)) Yield();
   return 1;
 }
 
@@ -36,6 +34,8 @@ uint32_t Read_Str(char* buf, uint32_t size) {
   buf[i] = '\0';
   return ret;
 }
+
+uint32_t Read_Buf(uint8_t* buf, uint32_t size) { return Read(buf, size); }
 
 uint32_t Write_Hex(uint32_t v) {
   char buf[11];

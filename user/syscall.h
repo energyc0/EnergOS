@@ -20,7 +20,7 @@ void Exit(void);
 uint32_t Create(const char *name, void (*entry)(void *param), void *param);
 
 void Print_Task_List(void);
-// Pause exection of the current task for a specified number of ticks.
+// Pause execution of the current task for a specified number of ticks.
 void Sleep(uint32_t ticks);
 
 // Pause execution until scheduler won't wake the task up.
@@ -31,5 +31,9 @@ uint32_t Wakeup(uint32_t tid);
 // Wait for task to terminate and return.
 // Returns the task ID of the terminated task, or 0 if the task ID is invalid.
 uint32_t Wait(uint32_t tid);
+
+// Read up to n bytes from UART into buf; returns the count read, possibly
+// fewer than n if the receive times out.
+uint32_t Read(void *buf, uint32_t n);
 
 #endif

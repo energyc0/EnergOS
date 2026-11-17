@@ -82,17 +82,22 @@ uint32_t pUART_SendString(const uint8_t *str) {
   }
 }
 
-uint32_t pUART_ReceiveByte(uint8_t *byte, uint32_t timeout_ms) {
-  if (byte == NULL) return 0;
-  HAL_StatusTypeDef status = HAL_UART_Receive(&huart2, byte, 1, timeout_ms);
-  switch (status) {
-    case HAL_OK:
-      return 1;
-    case HAL_BUSY:
-      return -1;
-    default:
-      return 0;
+uint32_t pUART_Receive(uint8_t *buf, uint32_t size, uint32_t timeout_ms) {
+  if (buf == NULL || size == 0) return 0;
+
+  uint32_t bytes_read = 0;
+  while (bytes_read < size) {
+    uint32_t remaining = size - bytes_read;
+    uint16_t chunk_size =
+        remaining > UINT16_MAX ? UINT16_MAX : (uint16_t)remaining;
+    HAL_StatusTypeDef status =
+        HAL_UART_Receive(&huart2, &buf[bytes_read], chunk_size, timeout_ms);
+    if (status == HAL_BUSY || status == HAL_ERROR) return bytes_read;
+
+    bytes_read += chunk_size - huart2.RxXferCount;
+    if (status != HAL_OK) return bytes_read;
   }
+  return bytes_read;
 }
 
 uint32_t pUart_Send_Hex(uint32_t value) {

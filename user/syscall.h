@@ -5,8 +5,6 @@
 
 /* All the syscalls return 0 on failure */
 
-void Jump_First_Task(void);
-
 // Return execution to another task.
 void Yield(void);
 
@@ -35,5 +33,8 @@ uint32_t Wait(uint32_t tid);
 // Read up to n bytes from UART into buf; returns the count read, possibly
 // fewer than n if the receive times out.
 uint32_t Read(void *buf, uint32_t n);
+
+// Use system call to use HAL functions.
+uint32_t Get_Tick();
 
 #endif

@@ -1,7 +1,8 @@
-#include "time.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_flash.h"
 #include "stm32f4xx_hal_rcc.h"
+#include "time.h"
+#include "user/syscall.h"
 
 int pSystemClock_Config(void) {
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -24,6 +25,5 @@ int pSystemClock_Config(void) {
   return (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) == HAL_OK);
 }
 
-void pDelay(uint32_t delay) { HAL_Delay(delay); }
-
+// Reading uint32_t is atomic on stm32f411re
 uint32_t pGet_Tick(void) { return HAL_GetTick(); }

@@ -17,6 +17,9 @@ extern task_t tasks[NTASKS];
 
 static mutex_t read_mutex = MUTEX_INIT();
 
+// Syscall for pJump_First_Task()
+void Jump_First_Task(void) { pSystem_Call(SYSCALL_JUMP_FIRST_TASK); }
+
 static void Syscall_Exit(void) {
   Task_Delete(Get_Current_Task());
   pPend_Task_Switch();
@@ -36,8 +39,8 @@ static uint32_t Syscall_Wakeup(uint32_t tid) {
 
 static void Syscall_Sleep(uint32_t ticks) {
   if (ticks == 0) return;
-  task_t *task = Get_Current_Task();
   Kernel_Mutex_Lock(&tasks_mutex);
+  task_t *task = Get_Current_Task();
   Kernel_Mutex_Lock(&task->task_mutex);
   task->state = T_WAITING;
   task->wakeup_time = pGet_Tick() + ticks;

@@ -85,17 +85,17 @@ Uart_Queue_Write(const char *str) {
   if (str == 0) return 0;
 
   uint32_t amount = 0;
-  mutex_lock(&tx_producer_mutex);
+  Mutex_Lock(&tx_producer_mutex);
   for (uint32_t i = 0; str[i] != '\0'; i++) {
     amount += Queue_Character(str[i]);
   }
-  mutex_unlock(&tx_producer_mutex);
+  Mutex_Unlock(&tx_producer_mutex);
   return amount;
 }
 
 __attribute__((section(".user_text"))) uint32_t Uart_Queue_Write_Char(char c) {
-  mutex_lock(&tx_producer_mutex);
+  Mutex_Lock(&tx_producer_mutex);
   uint32_t amount = Queue_Character(c);
-  mutex_unlock(&tx_producer_mutex);
+  Mutex_Unlock(&tx_producer_mutex);
   return amount;
 }

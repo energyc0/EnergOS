@@ -1,6 +1,7 @@
+#include "uart.h"
+
 #include <stdint.h>
 
-#include "uart.h"
 #include "stm32f4xx_hal.h"
 #include "util/util.h"
 
@@ -15,9 +16,8 @@ uint32_t pUart_Send(const uint8_t *data, uint32_t length) {
     uint32_t remaining = length - sent;
     uint16_t chunk_size =
         remaining > UINT16_MAX ? UINT16_MAX : (uint16_t)remaining;
-    HAL_StatusTypeDef status =
-        HAL_UART_Transmit(&huart2, (uint8_t *)&data[sent], chunk_size,
-                          HAL_MAX_DELAY);
+    HAL_StatusTypeDef status = HAL_UART_Transmit(
+        &huart2, (uint8_t *)&data[sent], chunk_size, HAL_MAX_DELAY);
     if (status == HAL_BUSY) {
       return sent == 0 ? UINT32_MAX : sent;
     }

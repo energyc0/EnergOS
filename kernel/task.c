@@ -185,4 +185,11 @@ void Scheduler_Start(void) {
   pStart_First_Task();
 }
 
+task_t *Get_Task(uint32_t tid) {
+  for (uint32_t i = 0; i < NTASKS; i++) {
+    if (tasks[i].tid == tid) return &tasks[i];
+  }
+  return 0;
+}
+
 task_t *Get_Current_Task(void) { return current_task; }

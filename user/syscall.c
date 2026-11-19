@@ -28,3 +28,9 @@ uint32_t Wait(uint32_t tid) {
 uint32_t Read(void* buf, uint32_t n) {
   return pSystem_Call_Arg2(SYSCALL_READ, (uint32_t)buf, n);
 }
+
+uint32_t Wakeup(uint32_t tid) { return pSystem_Call_Arg1(SYSCALL_WAKEUP, tid); }
+
+uint32_t Get_Tick() { return pSystem_Call(SYSCALL_GET_TICK); }
+
+uint32_t Get_Tid() { return pSystem_Call(SYSCALL_GET_TID); }

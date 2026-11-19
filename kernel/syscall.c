@@ -4,6 +4,7 @@
 
 #include "kassert.h"
 #include "kernel/typedefs.h"
+#include "portable/irq.h"
 #include "portable/kernel_config.h"
 #include "portable/scheduler.h"
 #include "portable/time.h"
@@ -33,6 +34,10 @@ static uint32_t Syscall_Create(const char *name, void (*entry)(void *param),
 static uint32_t Syscall_Wakeup(uint32_t tid) {
   if (tid == 0) return 0;
   Kernel_Mutex_Lock(&tasks_mutex);
+  task_t *task = Get_Task(tid);
+  Kernel_Mutex_Lock(&task->task_mutex);
+  if (task->state == T_WAITING) task->state = T_READY;
+  Kernel_Mutex_Unlock(&task->task_mutex);
   Kernel_Mutex_Unlock(&tasks_mutex);
   return tid;
 }
@@ -85,6 +90,13 @@ static uint32_t Syscall_Read(uint8_t *buf, uint32_t n) {
   return res;
 }
 
+static uint32_t Syscall_Get_Tid() {
+  uint32_t irq_state = pIRQ_Save();
+  uint32_t tid = Get_Current_Task()->tid;
+  pIRQ_Restore(irq_state);
+  return tid;
+}
+
 void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
                      uint32_t arg2, uint32_t arg3, uint32_t *ret) {
   (void)arg3;
@@ -132,6 +144,12 @@ void Syscall_Handler(uint32_t sysnum, uint32_t arg0, uint32_t arg1,
       break;
     case SYSCALL_SEMAPHORE_SIGNAL:
       *ret = (uint32_t)Kernel_Semaphore_Signal((semaphore_t *)arg0);
+      break;
+    case SYSCALL_GET_TICK:
+      *ret = pGet_Tick();
+      break;
+    case SYSCALL_GET_TID:
+      *ret = Syscall_Get_Tid();
       break;
     default:
       Panic("Undefined syscall number");

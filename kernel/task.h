@@ -46,9 +46,12 @@ void Task_Delete(task_t *task);
 void Kernel_Print_Tasks(void);
 
 // Sleep until somebody calls wakeup
-void Task_Sleep();
+void Task_Sleep(void);
 
 void Scheduler_Start(void);
+
+// Must be used in critical block (use synchronization primitives)
+task_t *Get_Task(uint32_t tid);
 
 task_t *Get_Current_Task(void);
 

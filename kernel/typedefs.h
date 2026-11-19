@@ -6,7 +6,7 @@
 
 /* Opaque storage for statically allocated mutexes. */
 typedef struct mutex {
-  uintptr_t _opaque[3];
+  uintptr_t _opaque[4];
 } mutex_t;
 
 /* Opaque storage for statically allocated spinlocks. */
@@ -16,8 +16,22 @@ typedef struct spinlock {
 
 /* Opaque storage for statically allocated semaphores. */
 typedef struct semaphore {
-  uintptr_t _opaque[2];
+  uintptr_t _opaque[5];
 } semaphore_t;
+
+typedef struct list {
+  void* value;
+  struct list* next;
+} list_t;
+
+typedef struct event {
+  uintptr_t _opaque[3];
+} event_t;
+
+#define MUTEX_INIT() {0}
+#define SPINLOCK_INIT() {0}
+#define SEMAPHORE_INIT(limit) \
+  {{(uintptr_t)(limit), (uintptr_t)(limit), 0, 0, 0}}
 
 typedef enum {
   S_SUCCESS = 0,

@@ -25,10 +25,10 @@ typedef struct task {
   uint32_t tid;
   const char *name;
   enum task_state state;
-  mutex_t task_mutex;      // Mutex to access task data
-  uint32_t wakeup_time;    // Time when the task should wake up, in milliseconds
-  struct task *wait_next;  // Pointer to next task in the wait list (for
-  // synchronization primitives)
+  mutex_t task_mutex;    // Mutex to access task data
+  uint32_t wakeup_time;  // Time when the task should wake up, in milliseconds
+  list_t wait_node;
+  uint32_t wait_mask;
 } task_t;
 
 // Kernel-only constructor. Unprivileged callers should use Create(), which

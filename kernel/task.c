@@ -106,7 +106,9 @@ void Init_Task(task_t *task, uint32_t tid, const char *name,
   task->tid = tid;
   task->state = T_READY;
   task->privilege = privilege;
-  task->wait_next = 0;
+  task->wait_node.value = 0;
+  task->wait_node.next = 0;
+  task->wait_mask = 0;
   task->wakeup_time = 0;
 }
 

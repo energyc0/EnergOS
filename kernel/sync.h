@@ -7,15 +7,6 @@
   Synchronization primitives for single processor systems.
 */
 
-#define MUTEX_INIT() {0}
-#define SPINLOCK_INIT() {0}
-#define SEMAPHORE_INIT(limit)                \
-  {                                          \
-    {                                        \
-      (uintptr_t)(limit), (uintptr_t)(limit) \
-    }                                        \
-  }
-
 sync_result_t Spinlock_Lock(spinlock_t* lck);
 sync_result_t Spinlock_Unlock(spinlock_t* lck);
 

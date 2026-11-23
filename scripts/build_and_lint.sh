@@ -1,5 +1,8 @@
-#/bin/bash
-# This script must be called from the root directory
+#!/bin/bash
+
+set -uo pipefail
+
+cd "$(dirname "$0")/.."
 
 status=0
 

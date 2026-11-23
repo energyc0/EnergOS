@@ -13,26 +13,43 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 set(TOOLCHAIN_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(LINKER_SCRIPT ${TOOLCHAIN_DIR}/stm32f411re.ld)
+# Need to specify name for platform and architecture dependent directories
+set(PLATFORM stm32f411re)
+set(LINKER_SCRIPT ${TOOLCHAIN_DIR}/${PLATFORM}.ld)
 set(BAUDRATE 115200)
+set(MCU_DEVICE_FILE /dev/ttyACM0)
+set(OPENOCD_INTERFACE "interface/stlink.cfg")
+set(OPENOCD_TARGET "target/stm32f4x.cfg")
+set(QEMU_MACHINE_TEST "netduinoplus2")
+set(TOOLCHAIN_RUNTIME_LIBRARY gcc)
+set(QEMU_SYSTEM qemu-system-arm)
 
-add_link_options(
+set(ARCH_FLAGS
     -mcpu=${CMAKE_SYSTEM_PROCESSOR}
     -mthumb
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard
-    -Wl,--gc-sections
-    -L${TOOLCHAIN_DIR}
-    -T${LINKER_SCRIPT}
 )
 
-add_compile_options(
-    -mcpu=${CMAKE_SYSTEM_PROCESSOR}
-    -mthumb
-    -mfpu=fpv4-sp-d16
-    -mfloat-abi=hard
+set(COMPILE_FLAGS
+    ${ARCH_FLAGS}
     -DSTM32F411xE
-    -DUSE_HAL_DRIVER 
-    -DBAUDRATE=${BAUDRATE})
+    -DUSE_HAL_DRIVER
+    -DBAUDRATE=${BAUDRATE}
+)
+
+set(LINK_FLAGS
+    ${ARCH_FLAGS}
+    -Wl,--gc-sections
+    -L${TOOLCHAIN_DIR}
+)
+
+string(JOIN " " COMPILE_FLAGS_STRING ${COMPILE_FLAGS})
+string(JOIN " " LINK_FLAGS_STRING ${LINK_FLAGS})
+
+set(CMAKE_C_FLAGS_INIT "${CMAKE_C_FLAGS_INIT} ${COMPILE_FLAGS_STRING}")
+set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} ${COMPILE_FLAGS_STRING}")
+set(CMAKE_ASM_FLAGS_INIT "${CMAKE_ASM_FLAGS_INIT} ${COMPILE_FLAGS_STRING}")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} ${LINK_FLAGS_STRING}")
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")

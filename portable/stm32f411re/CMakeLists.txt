@@ -1,5 +1,3 @@
-set(LINKER_SCRIPT ${TOOLCHAIN_DIR}/stm32f411re.ld PARENT_SCOPE)
-
 message(STATUS "Current linker script directory: ${CMAKE_CURRENT_LIST_DIR}")
 
 add_library(PORT_LIB
@@ -13,11 +11,11 @@ uart.c
 
 target_include_directories(PORT_LIB PUBLIC
     ${PROJECT_SOURCE_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}
 )
 target_include_directories(PORT_LIB PRIVATE ${PORT_DIR})
-target_include_directories(HAL PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(PORT_LIB PRIVATE HAL)
 target_link_libraries(PORT_LIB PUBLIC UTILITY)
 
 add_custom_target(debug_server COMMAND
-    openocd -f interface/stlink.cfg -f target/stm32f4x.cfg)
+    ${OPENOCD_EXECUTABLE} -f ${OPENOCD_INTERFACE} -f ${OPENOCD_TARGET})

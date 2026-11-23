@@ -22,8 +22,7 @@ jobs:
       - name: Build and lint
         run: |
           ./scripts/build_and_lint.sh
-              - name: Run QEMU tests
-      - name: Run tests
+      - name: Run QEMU tests
         run: |
           ./scripts/run_tests.sh
 

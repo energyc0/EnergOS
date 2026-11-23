@@ -18,6 +18,7 @@ uint32_t *pTask_Stack_Init(uint32_t *stack_top, void (*task_entry)(void *param),
   stack_top[4] = 0;                     // R12
   stack_top[3] = 0;                     // R3
   stack_top[2] = 0;                     // R2
+  stack_top[1] = 0;                     // R1
   stack_top[0] = (uint32_t)param;       // R0
   *(--stack_top) = 0xFFFFFFFD;  // Return to Thread mode using this task's PSP.
   stack_top -= 8;               // Reserve space for R4-R11

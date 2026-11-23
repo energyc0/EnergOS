@@ -3,12 +3,19 @@
 #include "kernel/task.h"
 #include "portable/irq.h"
 #include "portable/scheduler.h"
+#include "portable/syscall.h"
 #include "test_support.h"
+#include "test_port.h"
 #include "user/syscall.h"
 #include "stm32f411xe.h"
 
 static void Test_Entry(void *param) { (void)param; }
 static task_t *test_current_task;
+static task_t privilege_test_task;
+static uint32_t previous_control;
+static uint32_t kernel_control;
+static uint32_t user_control;
+
 task_t *Get_Current_Task(void) { return test_current_task; }
 
 void Exit(void) {}
@@ -69,19 +76,29 @@ static void Write_Control(uint32_t value) {
   __asm volatile("msr control, %0\n\tisb" : : "r"(value) : "memory");
 }
 
+static void Test_Privilege_SVC(test_svc_frame_t *frame) {
+  (void)frame;
+  test_current_task = &privilege_test_task;
+
+  privilege_test_task.privilege = T_KERNEL;
+  pSet_Current_Task_Privilege();
+  kernel_control = Read_Control();
+
+  privilege_test_task.privilege = T_USER;
+  pSet_Current_Task_Privilege();
+  user_control = Read_Control();
+
+  Write_Control(previous_control);
+}
+
 static void Test_Task_Privilege_Control(void) {
-  task_t test_task;
+  previous_control = Read_Control();
+  Test_Port_Set_SVC_Handler(Test_Privilege_SVC);
+  pSystem_Call(0);
 
-  test_task.privilege = T_KERNEL;
-  test_current_task = &test_task;
-  pSet_Current_Task_Privilege();
-  TEST_CHECK((Read_Control() & 3u) == 2u);
-
-  test_task.privilege = T_USER;
-  pSet_Current_Task_Privilege();
-  TEST_CHECK((Read_Control() & 3u) == 3u);
-
-  Write_Control(0u);
+  TEST_CHECK((kernel_control & 1u) == 0u);
+  TEST_CHECK((user_control & 1u) == 1u);
+  TEST_CHECK(Read_Control() == previous_control);
 }
 
 int main(void) {

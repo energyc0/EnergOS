@@ -7,8 +7,17 @@ endif()
 
 set(QEMU_TEST_HARDWARE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/hardware/${PLATFORM}")
 
+add_library(TEST_PORT STATIC
+  "${QEMU_TEST_HARDWARE_DIR}/startup.S"
+  "${CMAKE_CURRENT_SOURCE_DIR}/test_port.c"
+)
+target_include_directories(TEST_PORT PUBLIC
+  "${PROJECT_SOURCE_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
 function(add_qemu_test target)
-  add_executable(${target} ${ARGN} "${QEMU_TEST_HARDWARE_DIR}/startup.S")
+  add_executable(${target} ${ARGN})
 
   target_include_directories(${target} PRIVATE
     "${PROJECT_SOURCE_DIR}"
@@ -17,7 +26,14 @@ function(add_qemu_test target)
     "${TESTS_DIR}"
   )
 
-  target_link_libraries(${target} PRIVATE PORT_LIB USER HAL UTILITY ${TOOLCHAIN_RUNTIME_LIBRARY})
+  target_link_libraries(${target} PRIVATE
+    TEST_PORT
+    PORT_LIB
+    USER
+    HAL
+    UTILITY
+    ${TOOLCHAIN_RUNTIME_LIBRARY}
+  )
 
   target_compile_options(${target} PRIVATE
     -ffreestanding

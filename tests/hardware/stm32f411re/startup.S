@@ -4,6 +4,16 @@
 .section .isr_vector, "a", %progbits
 .word __stack_top
 .word Reset_Handler
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word Test_SVC_Handler
 
 .section .text.Reset_Handler, "ax", %progbits
 .thumb_func

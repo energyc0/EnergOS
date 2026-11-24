@@ -9,11 +9,12 @@ set(QEMU_TEST_HARDWARE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/hardware/${PLATFORM}")
 
 add_library(TEST_PORT STATIC
   "${QEMU_TEST_HARDWARE_DIR}/startup.S"
-  "${CMAKE_CURRENT_SOURCE_DIR}/test_port.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/hardware/test_port.c"
 )
 target_include_directories(TEST_PORT PUBLIC
   "${PROJECT_SOURCE_DIR}"
   "${CMAKE_CURRENT_SOURCE_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/hardware"
 )
 
 function(add_qemu_test target)
@@ -24,6 +25,7 @@ function(add_qemu_test target)
     "${CMAKE_CURRENT_LIST_DIR}"
     "${PORT_DIR}"
     "${TESTS_DIR}"
+    "${TESTS_DIR}/hardware"
   )
 
   target_link_libraries(${target} PRIVATE
@@ -67,7 +69,7 @@ enable_testing()
 
 add_qemu_test(task_tests
   task_tests.c
-  qemu_port.c
+  hardware/qemu_port.c
   "${PROJECT_SOURCE_DIR}/kernel/task.c"
   "${PROJECT_SOURCE_DIR}/kernel/sync.c"
 )
@@ -75,7 +77,7 @@ target_compile_definitions(task_tests PRIVATE ENERGOS_QEMU)
 
 add_qemu_test(sync_tests
   sync_tests.c
-  qemu_port.c
+  hardware/qemu_port.c
   "${PROJECT_SOURCE_DIR}/kernel/sync.c"
 )
 target_compile_definitions(sync_tests PRIVATE ENERGOS_QEMU)

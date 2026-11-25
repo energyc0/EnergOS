@@ -14,7 +14,7 @@ target_link_options(${FIRMWARE_NAME}.elf PRIVATE
 )
 
 target_include_directories(${FIRMWARE_NAME}.elf PRIVATE ${PROJECT_SOURCE_DIR})
-target_link_libraries(${FIRMWARE_NAME}.elf PORT_LIB USER HAL UTILITY ${TOOLCHAIN_RUNTIME_LIBRARY})
+target_link_libraries(${FIRMWARE_NAME}.elf PORT_LIB USER HAL LFS UTILITY ${TOOLCHAIN_RUNTIME_LIBRARY})
 
 add_custom_command(TARGET ${FIRMWARE_NAME}.elf POST_BUILD
 COMMAND ${OBJCOPY} -O binary ${FIRMWARE_NAME}.elf ${FIRMWARE_NAME}.bin)

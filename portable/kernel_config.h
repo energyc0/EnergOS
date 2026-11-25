@@ -14,4 +14,7 @@
 #define SHELL_MAX_LINE 128u
 #define SHELL_MAX_ARGS 16u
 
+// External memory
+#define W25Q64
+
 #endif

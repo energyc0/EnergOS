@@ -74,7 +74,7 @@ void SysTick_Handler(void) {
   static uint32_t task_time_switch_ms = 0;
   HAL_IncTick();
   if (++task_time_switch_ms >= CONTEXT_SWITCH_TICKS) {
-    pPend_Task_Switch();
+    if (Get_Current_Task() != 0) pPend_Task_Switch();
     task_time_switch_ms = 0;
   }
 }

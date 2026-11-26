@@ -9,6 +9,15 @@
 #include "util/util.h"
 
 #define CMD_JEDEC_ID (0x9F)
+#define CMD_WRITE_ENABLE (0x06)
+#define CMD_READ_STATUS_REGISTER1 (0x05)
+#define CMD_READ_DATA (0x03)
+#define CMD_PAGE_PROGRAM (0x02)
+#define CMD_SECTOR_ERASE (0x20)
+#define CMD_32KB_BLOCK_ERASE (0x52)
+#define CMD_64KB_BLOCK_ERASE (0xD8)
+
+#define BUSY_BIT (0x01)
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -26,11 +35,31 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
 }
 
 static void CS_Low(W25Q64_Handle *dev) {
-  HAL_GPIO_WritePin(dev->cs_port, 1 << dev->cs_pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(dev->cs_port, dev->cs_pin, GPIO_PIN_RESET);
 }
 
 static void CS_High(W25Q64_Handle *dev) {
-  HAL_GPIO_WritePin(dev->cs_port, 1 << dev->cs_pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(dev->cs_port, dev->cs_pin, GPIO_PIN_SET);
+}
+
+static void Send(W25Q64_Handle *dev, uint8_t cmd) {
+  HAL_SPI_Transmit(dev->hspi, &cmd, sizeof(cmd), HAL_MAX_DELAY);
+}
+
+static void Send_Addr(W25Q64_Handle *dev, uint32_t addr) {
+  uint8_t buf[3] = {(addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF};
+  HAL_SPI_Transmit(dev->hspi, buf, sizeof(buf), HAL_MAX_DELAY);
+}
+
+static void Write_Enable(W25Q64_Handle *dev) {
+  CS_Low(dev);
+  Send(dev, CMD_WRITE_ENABLE);
+  CS_High(dev);
+}
+
+static void Wait_Busy(W25Q64_Handle *dev) {
+  while (W25Q64_Is_Busy(dev)) {
+  }
 }
 
 uint32_t W25Q64_Init(W25Q64_Handle *dev, SPI_HandleTypeDef *hspi,
@@ -54,13 +83,6 @@ uint32_t W25Q64_Init(W25Q64_Handle *dev, SPI_HandleTypeDef *hspi,
   // Return 0 on success, return 1 on failure
   if (HAL_SPI_Init(hspi) != HAL_OK) return 1;
 
-  GPIO_InitTypeDef gpio_init = {0};
-  gpio_init.Pin = 1 << cs_pin;
-  gpio_init.Pull = GPIO_PULLUP;
-  gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-  gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(cs_port, &gpio_init);
-
   dev->cs_port = cs_port;
   dev->cs_pin = cs_pin;
   dev->hspi = hspi;
@@ -73,16 +95,84 @@ uint32_t W25Q64_ReadJEDEC_ID(W25Q64_Handle *dev) {
 
   buf[0] = CMD_JEDEC_ID;
   CS_Low(dev);
-  HAL_SPI_Transmit(dev->hspi, &buf[0], sizeof(uint8_t), HAL_MAX_DELAY);
+  Send(dev, CMD_JEDEC_ID);
   HAL_SPI_Receive(dev->hspi, &buf[1], sizeof(uint8_t) * 3, HAL_MAX_DELAY);
   CS_High(dev);
 
   return ((uint32_t)buf[1] << 16) | ((uint32_t)buf[2] << 8) | buf[3];
 }
 
-void W25Q64_Read(W25Q64_Handle *dev, uint32_t addr, uint8_t *buf, uint32_t len);
+void W25Q64_Read(W25Q64_Handle *dev, uint32_t addr, uint8_t *buf,
+                 uint32_t len) {
+  Wait_Busy(dev);
+  CS_Low(dev);
+  Send(dev, CMD_READ_DATA);
+  Send_Addr(dev, addr);
+
+  HAL_SPI_Receive(dev->hspi, buf, len, HAL_MAX_DELAY);
+
+  CS_High(dev);
+}
 
 void W25Q64_WritePage(W25Q64_Handle *dev, uint32_t addr, const uint8_t *buf,
-                      uint16_t len);
+                      uint16_t len) {
+  if (len > 256) len = 256;
+  if (len == 0) return;
 
-void W25Q64_EraseSector(W25Q64_Handle *dev, uint32_t addr);
+  Wait_Busy(dev);
+  Write_Enable(dev);
+  CS_Low(dev);
+  Send(dev, CMD_PAGE_PROGRAM);
+  Send_Addr(dev, addr);
+
+  HAL_SPI_Transmit(dev->hspi, buf, len, HAL_MAX_DELAY);
+
+  CS_High(dev);
+}
+
+void W25Q64_Write(W25Q64_Handle *dev, uint32_t addr, const uint8_t *buf,
+                  uint16_t len) {
+  for (uint16_t p = 0; p < len;) {
+    uint16_t size = (len - p >= PAGESIZE_BYTES) ? PAGESIZE_BYTES : (len - p);
+    W25Q64_WritePage(dev, addr + p, &buf[p], size);
+    p += size;
+  }
+}
+void W25Q64_EraseSector4KB(W25Q64_Handle *dev, uint32_t addr) {
+  Wait_Busy(dev);
+  Write_Enable(dev);
+  CS_Low(dev);
+  Send(dev, CMD_SECTOR_ERASE);
+  Send_Addr(dev, addr);
+
+  CS_High(dev);
+}
+
+void W25Q64_EraseSector32KB(W25Q64_Handle *dev, uint32_t addr) {
+  Wait_Busy(dev);
+  Write_Enable(dev);
+  CS_Low(dev);
+  Send(dev, CMD_32KB_BLOCK_ERASE);
+  Send_Addr(dev, addr);
+
+  CS_High(dev);
+}
+
+void W25Q64_EraseSector64KB(W25Q64_Handle *dev, uint32_t addr) {
+  Wait_Busy(dev);
+  Write_Enable(dev);
+  CS_Low(dev);
+  Send(dev, CMD_64KB_BLOCK_ERASE);
+  Send_Addr(dev, addr);
+
+  CS_High(dev);
+}
+
+uint32_t W25Q64_Is_Busy(W25Q64_Handle *dev) {
+  uint8_t status;
+  CS_Low(dev);
+  Send(dev, CMD_READ_STATUS_REGISTER1);
+  HAL_SPI_Receive(dev->hspi, &status, sizeof(status), HAL_MAX_DELAY);
+  CS_High(dev);
+  return status & BUSY_BIT;
+}
